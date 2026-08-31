@@ -1,5 +1,3 @@
-from gspread.utils import rowcol_to_a1
-
 from config import settings
 from models.content import Content
 from sheets.client import get_worksheet
@@ -50,10 +48,13 @@ def get_existing_state() -> tuple[set, set, dict]:
 def append_contents(contents: list[Content]) -> None:
     """새 콘텐츠를 시트 맨 끝에 이어붙인다.
 
-    gspread의 append_rows()는 Google Sheets API가 내부적으로 '테이블의 끝'을
-    추정하게 하는데, 이 시트처럼 대량 삭제/클리어 이력이 있는 경우 그 추정이
-    틀려 헤더 바로 다음 행(기존 데이터)을 덮어쓰는 문제가 실제로 발생했다.
-    그래서 마지막 행 번호를 직접 계산해 정확한 범위에 update()로 쓴다.
+    직접 마지막 행 번호를 계산해 update()로 쓰는 방식은, 스케줄 실행과 수동
+    재실행이 겹치는 등 두 프로세스가 동시에 돌면 같은 행 번호를 계산해 서로
+    덮어쓰는 경쟁 상태(race condition)에 취약하다는 것이 실제로 확인됐다.
+    대신 Google Sheets API가 서버 측에서 원자적으로 처리하는 append_rows()를
+    쓰되, insert_data_option="INSERT_ROWS"를 명시한다. 이렇게 하면 API의
+    테이블 끝 추정이 틀리더라도(과거 실제로 발생) 기존 셀을 덮어쓰는 대신
+    새 행을 삽입하므로 최악의 경우에도 데이터 손실은 발생하지 않는다.
     """
     if not contents:
         logger.info("No new contents to append")
@@ -67,10 +68,5 @@ def append_contents(contents: list[Content]) -> None:
         data = content.to_dict()
         rows.append([data.get(header, "") for header in headers])
 
-    existing_row_count = len(worksheet.get_all_values())
-    start_row = existing_row_count + 1
-    end_row = start_row + len(rows) - 1
-    cell_range = f"{rowcol_to_a1(start_row, 1)}:{rowcol_to_a1(end_row, len(headers))}"
-
-    worksheet.update(cell_range, rows, value_input_option="USER_ENTERED")
-    logger.info(f"Appended {len(rows)} new rows to contents sheet (rows {start_row}-{end_row})")
+    worksheet.append_rows(rows, value_input_option="USER_ENTERED", insert_data_option="INSERT_ROWS")
+    logger.info(f"Appended {len(rows)} new rows to contents sheet")
