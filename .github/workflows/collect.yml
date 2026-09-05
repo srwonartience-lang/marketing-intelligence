@@ -1,4 +1,4 @@
-name: Daily RSS Collection
+name: Daily Marketing Intelligence Pipeline
 
 on:
   schedule:
@@ -23,6 +23,12 @@ jobs:
           GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
           GOOGLE_SHEETS_ID: ${{ secrets.GOOGLE_SHEETS_ID }}
         run: python main.py
+
+      - name: Run event clustering
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
+          GOOGLE_SHEETS_ID: ${{ secrets.GOOGLE_SHEETS_ID }}
+        run: python cluster_events.py
 
       - name: Upload collector log
         if: always()

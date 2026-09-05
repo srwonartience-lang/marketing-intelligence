@@ -10,10 +10,12 @@ logger = get_logger(__name__)
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive.readonly",
+    "https://www.googleapis.com/auth/drive",
 ]
 
 _spreadsheet = None
+_gspread_client = None
+_spreadsheets_by_id = {}
 
 
 def _load_credentials() -> Credentials:
@@ -47,3 +49,14 @@ def get_spreadsheet():
 
 def get_worksheet(sheet_name: str):
     return get_spreadsheet().worksheet(sheet_name)
+
+
+def get_spreadsheet_by_id(spreadsheet_id: str):
+    """메인 DB가 아닌 다른 스프레드시트(예: 분류 결과 리뷰용 시트)를 같은
+    서비스 계정 인증으로 연다."""
+    global _gspread_client
+    if spreadsheet_id not in _spreadsheets_by_id:
+        if _gspread_client is None:
+            _gspread_client = gspread.authorize(_load_credentials())
+        _spreadsheets_by_id[spreadsheet_id] = _gspread_client.open_by_key(spreadsheet_id)
+    return _spreadsheets_by_id[spreadsheet_id]

@@ -45,6 +45,38 @@ def get_existing_state() -> tuple[set, set, dict]:
     return urls, hashes, last_published_by_source
 
 
+def get_unclustered_contents(clustered_content_ids: set) -> list:
+    """아직 content_events에 배정되지 않은 콘텐츠를 Event Clustering 입력으로 반환한다."""
+    worksheet = get_worksheet(settings.SHEET_CONTENTS)
+    records = worksheet.get_all_records()
+    return [
+        {
+            "content_id": r["content_id"],
+            "source_id": r["source_id"],
+            "title": r["title"],
+            "summary": r["summary"],
+            "published_at": r["published_at"],
+        }
+        for r in records
+        if r["content_id"] and r["content_id"] not in clustered_content_ids
+    ]
+
+
+def get_unclassified_contents(classified_content_ids: set) -> list:
+    """아직 content_topics에 배정되지 않은 콘텐츠를 분류 입력으로 반환한다."""
+    worksheet = get_worksheet(settings.SHEET_CONTENTS)
+    records = worksheet.get_all_records()
+    return [
+        {
+            "content_id": r["content_id"],
+            "title": r["title"],
+            "summary": r["summary"],
+        }
+        for r in records
+        if r["content_id"] and r["content_id"] not in classified_content_ids
+    ]
+
+
 def append_contents(contents: list[Content]) -> None:
     """새 콘텐츠를 시트 맨 끝에 이어붙인다.
 
