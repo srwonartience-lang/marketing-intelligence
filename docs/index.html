@@ -130,12 +130,14 @@
   a.mini-card{ cursor:pointer; transition:border-color 0.12s ease; }
   a.mini-card:hover{ border-color:var(--ink); }
 
-  .feed-controls{ max-width:740px; }
-  #feed-q{ width:100%; font-family:inherit; font-size:15px; line-height:20px; color:var(--ink); background:var(--canvas);
-    padding:10px 14px; border:1px solid var(--hairline); border-radius:var(--r-sm); margin-bottom:12px; }
+  .feed-controls{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+  .feed-controls .cat-filter{ margin-bottom:0; }
+  #feed-q{ flex:1 1 260px; max-width:420px; font-family:inherit; font-size:15px; line-height:20px; color:var(--ink); background:var(--canvas);
+    padding:10px 14px; border:1px solid var(--hairline); border-radius:var(--r-sm); }
   #feed-q::placeholder{ color:var(--body); }
   #feed-q:focus{ outline:2px solid var(--ink); outline-offset:1px; border-color:var(--ink); }
-  #feed-view .list{ display:flex; flex-direction:column; gap:12px; max-width:740px; }
+  #feed-view .list{ display:grid; grid-template-columns:repeat(auto-fill, minmax(430px,1fr)); gap:12px; align-items:start; }
+  #feed-view .list > p, #feed-view .list > button{ grid-column:1 / -1; }
   .article-card{ background:var(--canvas); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:24px; }
   .article-card .row-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
   .article-card h3{ margin:6px 0 8px; }
