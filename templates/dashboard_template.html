@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signal Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#000000;
+    --on-primary:#ffffff;
+    --canvas:#ffffff;
+    --canvas-dark:#010120;
+    --hairline:#ebebeb;
+    --hairline-on-dark:#26263a;
+    --surface-dark-soft:#313641;
+    --body:#8f8f8f;
+    --on-dark:#ffffff;
+    --on-dark-soft:#a6a6c2;
+    --orange:#fc4c02;
+    --magenta:#ef2cc1;
+    --periwinkle:#bdbbff;
+    --mint:#c8f6f9;
+
+    --r-xs:3.25px;
+    --r-sm:4px;
+    --r-md:8px;
+    --r-full:9999px;
+
+    --cat-geo:#5B4FC7;        --cat-geo-wash:#EEEBFB;
+    --cat-ai:#1D6FB8;         --cat-ai-wash:#E4EFF8;
+    --cat-industry:#4B5566;   --cat-industry-wash:#EDEEF0;
+    --cat-perf:#B5490C;       --cat-perf-wash:#FBEBE0;
+    --cat-commerce:#0E7A72;   --cat-commerce-wash:#E2F3F1;
+    --cat-brand:#A6238C;      --cat-brand-wash:#F8E7F4;
+    --cat-research:#2F7D4F;   --cat-research-wash:#E5F3EA;
+  }
+
+  *{box-sizing:border-box;}
+  html, body{ margin:0; padding:0; }
+  body{
+    background:var(--canvas);
+    color:var(--ink);
+    font-family:"Inter", Helvetica Neue, Arial, sans-serif;
+    font-feature-settings:"ss01";
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{ max-width:1120px; margin:0 auto; }
+
+  .disp-xl{ font-size:40px; font-weight:500; line-height:48px; letter-spacing:-0.8px; text-wrap:balance; margin:0; }
+  .disp-lg{ font-size:26px; font-weight:500; line-height:31px; letter-spacing:-0.4px; margin:0; }
+  .disp-md{ font-size:19px; font-weight:500; line-height:24px; letter-spacing:-0.2px; margin:0; text-wrap:balance; }
+  .body-md{ font-size:16px; font-weight:400; line-height:22px; letter-spacing:-0.16px; }
+  .body-md-strong{ font-size:16px; font-weight:500; line-height:22px; letter-spacing:-0.16px; }
+  .caption{ font-size:13px; font-weight:400; line-height:18px; color:var(--body); }
+  .mono-btn{ font-family:"JetBrains Mono",ui-monospace,monospace; font-size:13px; font-weight:500; letter-spacing:0.04em; text-transform:uppercase; }
+  .mono-eyebrow{ font-family:"JetBrains Mono",ui-monospace,monospace; font-size:11px; font-weight:500; letter-spacing:0.06em; text-transform:uppercase; }
+  .mono-caption{ font-family:"JetBrains Mono",ui-monospace,monospace; font-size:11px; font-weight:400; letter-spacing:0.04em; font-variant-numeric:tabular-nums; }
+
+  .hero{ background:var(--canvas-dark); color:var(--on-dark); padding:44px 32px 40px; }
+  .hero-inner{ max-width:1120px; margin:0 auto; display:flex; align-items:flex-end; justify-content:space-between; gap:32px; flex-wrap:wrap; }
+  .hero .eyebrow{ color:var(--on-dark-soft); margin-bottom:12px; display:block; }
+  .hero h1{ color:var(--on-dark); margin:0 0 8px; }
+  .hero .date{ color:var(--on-dark-soft); }
+
+  .ribbon{ display:flex; align-items:flex-end; gap:3px; height:48px; flex-shrink:0; }
+  .ribbon i{ display:block; width:6px; border-radius:2px; background:linear-gradient(180deg, var(--orange), var(--magenta), var(--periwinkle)); }
+
+  .stats-row{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:12px; padding:24px 32px 0; }
+  .stat-tile{ background:var(--mint); color:var(--ink); border-radius:var(--r-sm); padding:20px 22px; }
+  .stat-tile .n{ font-size:30px; font-weight:500; letter-spacing:-0.5px; display:block; font-variant-numeric:tabular-nums; }
+  .stat-tile .l{ margin-top:4px; display:block; }
+
+  .note{ padding:16px 32px 0; }
+  .note span{ color:var(--body); }
+
+  .tabbar{ margin:20px 32px 0; display:inline-flex; background:var(--hairline); border-radius:var(--r-sm); padding:4px; gap:4px; }
+  .tabbar button{ appearance:none; border:none; cursor:pointer; background:var(--canvas); color:var(--ink); border-radius:var(--r-sm); padding:8px 20px; }
+  .tabbar button:not(.active){ background:transparent; color:var(--body); }
+  .tabbar button.active{ background:var(--ink); color:var(--on-primary); }
+  .tabbar button:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+
+  .content{ padding:24px 32px 72px; }
+  .view{ display:none; }
+  .view.active{ display:block; }
+
+  .badge{ display:inline-flex; align-items:center; background:var(--canvas); color:var(--ink); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:2px 8px; }
+  .badge-mint{ background:var(--mint); border-color:var(--mint); color:var(--ink); }
+  .badge-outline{ background:transparent; }
+
+  .chip{ border:none; }
+  .chip-geo{ background:var(--cat-geo-wash); color:var(--cat-geo); }
+  .chip-ai{ background:var(--cat-ai-wash); color:var(--cat-ai); }
+  .chip-industry{ background:var(--cat-industry-wash); color:var(--cat-industry); }
+  .chip-perf{ background:var(--cat-perf-wash); color:var(--cat-perf); }
+  .chip-commerce{ background:var(--cat-commerce-wash); color:var(--cat-commerce); }
+  .chip-brand{ background:var(--cat-brand-wash); color:var(--cat-brand); }
+  .chip-research{ background:var(--cat-research-wash); color:var(--cat-research); }
+
+  .cat-filter{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
+  .cat-pill{ appearance:none; cursor:pointer; border:1px solid var(--hairline); background:var(--canvas); color:var(--ink); border-radius:var(--r-sm); padding:7px 14px; display:inline-flex; align-items:center; gap:7px; }
+  .cat-pill .dot{ width:7px; height:7px; border-radius:50%; background:currentColor; }
+  .cat-pill:hover{ border-color:var(--ink); }
+  .cat-pill.geo{ color:var(--cat-geo); }
+  .cat-pill.ai{ color:var(--cat-ai); }
+  .cat-pill.industry{ color:var(--cat-industry); }
+  .cat-pill.perf{ color:var(--cat-perf); }
+  .cat-pill.commerce{ color:var(--cat-commerce); }
+  .cat-pill.brand{ color:var(--cat-brand); }
+  .cat-pill.research{ color:var(--cat-research); }
+  .cat-pill.active{ border-color:currentColor; }
+  .cat-pill.active.geo{ background:var(--cat-geo-wash); color:var(--cat-geo); }
+  .cat-pill.active.ai{ background:var(--cat-ai-wash); color:var(--cat-ai); }
+  .cat-pill.active.industry{ background:var(--cat-industry-wash); color:var(--cat-industry); }
+  .cat-pill.active.perf{ background:var(--cat-perf-wash); color:var(--cat-perf); }
+  .cat-pill.active.commerce{ background:var(--cat-commerce-wash); color:var(--cat-commerce); }
+  .cat-pill.active.brand{ background:var(--cat-brand-wash); color:var(--cat-brand); }
+  .cat-pill.active.research{ background:var(--cat-research-wash); color:var(--cat-research); }
+  .cat-pill.active.all{ background:var(--ink); color:var(--on-primary); border-color:var(--ink); }
+  .cat-pill.active.all .dot{ display:none; }
+
+  a{ color:inherit; text-decoration:none; }
+  a.badge{ cursor:pointer; }
+  a.badge:hover{ border-color:var(--ink); }
+  .article-card h3 a, .tl-card h4 a{ cursor:pointer; }
+  .article-card h3 a:hover, .tl-card h4 a:hover{ text-decoration:underline; text-underline-offset:3px; }
+  a.mini-card{ cursor:pointer; transition:border-color 0.12s ease; }
+  a.mini-card:hover{ border-color:var(--ink); }
+
+  #feed-view .list{ display:flex; flex-direction:column; gap:12px; max-width:740px; }
+  .article-card{ background:var(--canvas); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:24px; }
+  .article-card .row-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
+  .article-card h3{ margin:6px 0 8px; }
+  .article-card p{ margin:0 0 14px; color:var(--ink); max-width:64ch; }
+  .row-meta{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .sources{ display:flex; gap:6px; flex-wrap:wrap; }
+  .sources .badge{ color:var(--body); }
+
+  .cat-count-label{ margin:0 0 16px; color:var(--body); }
+  .cat-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(228px,1fr)); gap:10px; }
+  .mini-card{ background:var(--canvas); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:16px; display:flex; flex-direction:column; gap:10px; }
+  .mini-card h4{ font-size:15px; font-weight:500; line-height:20px; letter-spacing:-0.1px; margin:0; text-wrap:balance; }
+  .mini-card .mini-meta{ display:flex; align-items:center; justify-content:space-between; }
+
+  #timeline-view.active{ display:grid; grid-template-columns:320px 1fr; gap:28px; align-items:start; }
+
+  .cal{ background:var(--canvas); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:20px; }
+  .cal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .cal-nav{ display:flex; gap:4px; }
+  .cal-nav button{ appearance:none; border:1px solid var(--hairline); background:var(--canvas); color:var(--ink); border-radius:var(--r-xs); width:26px; height:26px; cursor:pointer; font-family:inherit; }
+  .cal-nav button:disabled{ opacity:0.3; cursor:default; }
+  .cal-nav button:not(:disabled):hover{ border-color:var(--ink); }
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  .cal-dow{ text-align:center; color:var(--body); padding-bottom:6px; }
+  .cal-day{ position:relative; aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:var(--r-xs); cursor:pointer; border:1px solid transparent; font-variant-numeric:tabular-nums; }
+  .cal-day.empty{ cursor:default; }
+  .cal-day.has-events:hover{ border-color:var(--hairline); }
+  .cal-day .cnt{ position:absolute; bottom:2px; font-family:"JetBrains Mono",monospace; font-size:8px; color:var(--body); }
+  .cal-day.selected{ background:var(--ink); color:var(--on-primary); }
+  .cal-day.selected .cnt{ color:var(--on-dark-soft); }
+  .cal-legend{ display:flex; align-items:center; gap:8px; margin-top:14px; padding-top:14px; border-top:1px solid var(--hairline); }
+
+  .tl-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:6px; }
+  .tl-head .count{ color:var(--body); }
+  .tl-sub{ margin:0 0 18px; }
+
+  .tl{ position:relative; padding-left:26px; display:flex; flex-direction:column; gap:20px; }
+  .tl::before{ content:""; position:absolute; left:5px; top:6px; bottom:6px; width:1px; background:var(--hairline); }
+  .tl-item{ position:relative; }
+  .tl-item::before{ content:""; position:absolute; left:-26px; top:5px; width:9px; height:9px; border-radius:50%; background:var(--ink); border:2px solid var(--canvas); outline:1px solid var(--hairline); }
+  .tl-time{ display:block; margin-bottom:6px; color:var(--body); }
+  .tl-card{ background:var(--canvas); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:16px 18px; }
+  .tl-card h4{ font-size:16px; font-weight:500; line-height:21px; letter-spacing:-0.16px; margin:4px 0 6px; text-wrap:balance; }
+  .tl-card p{ margin:0 0 10px; color:var(--ink); max-width:60ch; }
+  .tl-more{ color:var(--body); padding:20px 0; }
+
+  footer.site-footer{ padding:24px 32px 40px; border-top:1px solid var(--hairline); }
+
+  @media (max-width:760px){
+    #timeline-view.active{ grid-template-columns:1fr; }
+    .stats-row{ grid-template-columns:1fr; }
+    .hero-inner{ align-items:flex-start; }
+    .content, .hero, .stats-row, .note, .tabbar{ padding-left:18px; padding-right:18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div>
+      <span class="eyebrow mono-eyebrow">Marketing Intelligence · Daily Brief</span>
+      <h1 class="disp-xl">Signal Desk</h1>
+      <span class="date body-md" id="hero-date">최근 업데이트 —</span>
+    </div>
+    <div class="ribbon" aria-hidden="true">
+      <i style="height:60%"></i><i style="height:100%"></i><i style="height:40%"></i>
+      <i style="height:80%"></i><i style="height:55%"></i><i style="height:95%"></i>
+      <i style="height:35%"></i><i style="height:70%"></i>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="stats-row">
+    <div class="stat-tile"><span class="n" id="stat-events">–</span><span class="l mono-eyebrow">분류된 이벤트</span></div>
+    <div class="stat-tile"><span class="n" id="stat-categories">–</span><span class="l mono-eyebrow">카테고리</span></div>
+    <div class="stat-tile"><span class="n" id="stat-sources">–</span><span class="l mono-eyebrow">매체 수</span></div>
+  </div>
+
+  <p class="note"><span class="caption">Google Sheets DB에서 카테고리 분류가 확정된 이벤트만 표시합니다. 매일 자동으로 수집·분류되어 이 페이지도 함께 갱신됩니다. 제목을 클릭하면 원문으로 연결됩니다.</span></p>
+
+  <div class="tabbar" role="tablist">
+    <button class="mono-btn active" data-target="feed" role="tab" aria-selected="true">전체 피드</button>
+    <button class="mono-btn" data-target="category" role="tab" aria-selected="false">카테고리별</button>
+    <button class="mono-btn" data-target="timeline" role="tab" aria-selected="false">타임라인</button>
+  </div>
+
+  <div class="content">
+
+    <div id="feed-view" class="view active">
+      <div class="list" id="feed-list"></div>
+    </div>
+
+    <div id="category-view" class="view">
+      <div class="cat-filter" id="cat-filter"></div>
+      <p class="cat-count-label caption" id="cat-count-label"></p>
+      <div class="cat-grid" id="cat-grid-items"></div>
+    </div>
+
+    <div id="timeline-view" class="view">
+      <div class="cal">
+        <div class="cal-head">
+          <span class="disp-md" id="cal-label"></span>
+          <div class="cal-nav">
+            <button id="cal-prev" aria-label="이전 달">‹</button>
+            <button id="cal-next" aria-label="다음 달">›</button>
+          </div>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-legend">
+          <span class="cal-day selected" style="width:20px;height:20px;font-size:10px;flex:none;display:inline-flex;">·</span>
+          <span class="caption">선택된 날짜 · 숫자는 그날 분류된 이벤트 수</span>
+        </div>
+      </div>
+      <div>
+        <div class="tl-head">
+          <span class="disp-md" id="tl-date-label"></span>
+          <span class="mono-caption count" id="tl-count"></span>
+        </div>
+        <div class="tl" id="tl-list"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer class="site-footer">
+  <span class="caption">Marketing Intelligence · <span id="generated-at"></span> 생성</span>
+</footer>
+
+<script>
+  const CLASSIFIED_EVENTS = __CLASSIFIED_EVENTS_JSON__;
+  const GENERATED_AT = __GENERATED_AT_JSON__;
+
+  const CATEGORY_ORDER = ["SEO / GEO","AI Trends","Data & AI Research","Marketing Industry","Performance Marketing","Commerce & Retail","Brand Marketing"];
+  const CATEGORY_KEY = {
+    "SEO / GEO":"geo",
+    "AI Trends":"ai",
+    "Data & AI Research":"research",
+    "Marketing Industry":"industry",
+    "Performance Marketing":"perf",
+    "Commerce & Retail":"commerce",
+    "Brand Marketing":"brand",
+  };
+
+  function fmtDateLabel(d){
+    const dt = new Date(d + 'T00:00:00');
+    const days = ['일','월','화','수','목','금','토'];
+    return `${dt.getMonth()+1}월 ${dt.getDate()}일 (${days[dt.getDay()]})`;
+  }
+  function primaryUrl(ev){ return ev.sources[0] ? ev.sources[0].url : '#'; }
+  function sourcePillsHTML(ev){
+    return ev.sources.map(s => `<a class="badge caption" href="${s.url}" target="_blank" rel="noopener">${s.name}</a>`).join('');
+  }
+  function countLabel(ev){ return ev.sources.length > 1 ? `${ev.sources.length}개 매체 보도` : '단일 매체'; }
+
+  function chipHTML(ev){
+    return `<span class="badge chip mono-eyebrow chip-${CATEGORY_KEY[ev.category]}">${ev.category}</span>`;
+  }
+
+  function articleCardHTML(ev, compact){
+    if (compact){
+      return `<a class="mini-card" href="${primaryUrl(ev)}" target="_blank" rel="noopener">
+        <div class="row-top">${chipHTML(ev)}</div>
+        <h4>${ev.title}</h4>
+        <div class="mini-meta">
+          <span class="mono-caption">${ev.sources[0].name}</span>
+          <span class="mono-caption">${fmtDateLabel(ev.date)}</span>
+        </div>
+      </a>`;
+    }
+    const multi = ev.sources.length > 1;
+    return `<div class="article-card">
+      <div class="row-top">
+        ${chipHTML(ev)}
+        <span class="mono-caption">${fmtDateLabel(ev.date)} · ${ev.time}</span>
+      </div>
+      <h3 class="disp-md"><a href="${primaryUrl(ev)}" target="_blank" rel="noopener">${ev.title}</a></h3>
+      <p class="body-md">${ev.summary}</p>
+      <div class="row-meta">
+        <div class="sources">${sourcePillsHTML(ev)}</div>
+        <span class="badge ${multi ? 'badge-mint mono-caption' : 'mono-caption'}">${countLabel(ev)}</span>
+      </div>
+    </div>`;
+  }
+
+  function renderHeaderAndStats(){
+    document.getElementById('hero-date').textContent = CLASSIFIED_EVENTS.length
+      ? `최근 업데이트 — ${fmtDateLabel([...CLASSIFIED_EVENTS].sort((a,b) => (b.date+b.time).localeCompare(a.date+a.time))[0].date)} 수집분 기준`
+      : '아직 분류된 이벤트가 없습니다';
+    document.getElementById('stat-events').textContent = CLASSIFIED_EVENTS.length;
+    document.getElementById('stat-categories').textContent = new Set(CLASSIFIED_EVENTS.map(e => e.category)).size;
+    const sourceSet = new Set();
+    CLASSIFIED_EVENTS.forEach(e => e.sources.forEach(s => sourceSet.add(s.name)));
+    document.getElementById('stat-sources').textContent = sourceSet.size;
+    document.getElementById('generated-at').textContent = GENERATED_AT;
+  }
+
+  function renderFeed(){
+    const sorted = [...CLASSIFIED_EVENTS].sort((a,b) => (b.date+b.time).localeCompare(a.date+a.time));
+    document.getElementById('feed-list').innerHTML = sorted.map(ev => articleCardHTML(ev,false)).join('');
+  }
+
+  let activeCategory = 'all';
+
+  function renderCategoryFilter(){
+    const byCat = {};
+    CLASSIFIED_EVENTS.forEach(ev => { (byCat[ev.category] = byCat[ev.category] || []).push(ev); });
+    const present = CATEGORY_ORDER.filter(c => byCat[c]);
+
+    const pills = [
+      `<button class="cat-pill mono-btn all${activeCategory==='all' ? ' active all' : ''}" data-cat="all">전체 <span class="mono-caption" style="color:inherit">${CLASSIFIED_EVENTS.length}</span></button>`,
+      ...present.map(cat => {
+        const key = CATEGORY_KEY[cat];
+        const isActive = activeCategory === cat;
+        return `<button class="cat-pill mono-btn ${key}${isActive ? ` active ${key}` : ''}" data-cat="${cat}">
+          <span class="dot"></span>${cat} <span class="mono-caption" style="color:inherit">${byCat[cat].length}</span>
+        </button>`;
+      })
+    ];
+    document.getElementById('cat-filter').innerHTML = pills.join('');
+
+    document.querySelectorAll('.cat-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        activeCategory = btn.dataset.cat;
+        renderCategoryFilter();
+        renderCategoryGrid();
+      });
+    });
+  }
+
+  function renderCategoryGrid(){
+    const items = (activeCategory === 'all' ? CLASSIFIED_EVENTS : CLASSIFIED_EVENTS.filter(e => e.category === activeCategory))
+      .slice().sort((a,b) => (b.date+b.time).localeCompare(a.date+a.time));
+    document.getElementById('cat-count-label').textContent = `${activeCategory === 'all' ? '전체' : activeCategory} · ${items.length}개 이벤트`;
+    document.getElementById('cat-grid-items').innerHTML = items.map(ev => articleCardHTML(ev,true)).join('');
+  }
+
+  function renderCategory(){
+    renderCategoryFilter();
+    renderCategoryGrid();
+  }
+
+  const eventsByDate = {};
+  CLASSIFIED_EVENTS.forEach(ev => { (eventsByDate[ev.date] = eventsByDate[ev.date] || []).push(ev); });
+
+  const allDates = Object.keys(eventsByDate).sort();
+  let viewYear, viewMonth, selectedDate, minY, minM, maxY, maxM;
+  if (allDates.length){
+    [minY, minM] = allDates[0].split('-').map(Number);
+    [maxY, maxM] = allDates[allDates.length-1].split('-').map(Number);
+    viewYear = maxY; viewMonth = maxM - 1;
+    selectedDate = allDates[allDates.length-1];
+  } else {
+    const now = new Date();
+    viewYear = now.getFullYear(); viewMonth = now.getMonth();
+    minY = maxY = viewYear; minM = maxM = viewMonth + 1;
+    selectedDate = null;
+  }
+
+  function monthKey(y,m){ return y*12+m; }
+
+  function renderCalendar(){
+    document.getElementById('cal-label').textContent = `${viewYear}년 ${viewMonth+1}월`;
+    document.getElementById('cal-prev').disabled = monthKey(viewYear,viewMonth) <= monthKey(minY, minM-1);
+    document.getElementById('cal-next').disabled = monthKey(viewYear,viewMonth) >= monthKey(maxY, maxM-1);
+
+    const grid = document.getElementById('cal-grid');
+    const dowLabels = ['일','월','화','수','목','금','토'];
+    let html = dowLabels.map(d => `<div class="cal-dow mono-caption">${d}</div>`).join('');
+
+    const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+    const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+
+    for (let i=0; i<firstDay; i++) html += `<div class="cal-day empty"></div>`;
+    for (let day=1; day<=daysInMonth; day++){
+      const dateStr = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const items = eventsByDate[dateStr];
+      const isSelected = dateStr === selectedDate;
+      html += `<div class="cal-day body-md${items?' has-events':''}${isSelected?' selected':''}" data-date="${dateStr}">
+        ${day}${items ? `<span class="cnt">${items.length}</span>` : ''}
+      </div>`;
+    }
+    grid.innerHTML = html;
+
+    grid.querySelectorAll('.cal-day.has-events').forEach(cell => {
+      cell.addEventListener('click', () => {
+        selectedDate = cell.dataset.date;
+        renderCalendar();
+        renderTimeline();
+      });
+    });
+  }
+
+  function renderTimeline(){
+    if (!selectedDate){
+      document.getElementById('tl-date-label').textContent = '';
+      document.getElementById('tl-count').textContent = '';
+      document.getElementById('tl-list').innerHTML = `<div class="tl-more body-md">아직 분류된 이벤트가 없습니다.</div>`;
+      return;
+    }
+    const items = (eventsByDate[selectedDate] || []).slice().sort((a,b) => a.time.localeCompare(b.time));
+    document.getElementById('tl-date-label').textContent = fmtDateLabel(selectedDate);
+    document.getElementById('tl-count').textContent = items.length ? `${items.length}건` : '';
+
+    if (!items.length){
+      document.getElementById('tl-list').innerHTML = `<div class="tl-more body-md">이 날짜에는 분류된 이벤트가 없습니다.</div>`;
+      return;
+    }
+
+    document.getElementById('tl-list').innerHTML = items.map(ev => {
+      const multi = ev.sources.length > 1;
+      return `<div class="tl-item">
+        <span class="tl-time mono-caption">${ev.time}</span>
+        <div class="tl-card">
+          ${chipHTML(ev)}
+          <h4><a href="${primaryUrl(ev)}" target="_blank" rel="noopener">${ev.title}</a></h4>
+          <p class="body-md">${ev.summary}</p>
+          <div class="row-meta">
+            <div class="sources">${sourcePillsHTML(ev)}</div>
+            <span class="badge ${multi ? 'badge-mint mono-caption' : 'mono-caption'}">${countLabel(ev)}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('cal-prev').addEventListener('click', () => {
+    viewMonth--; if (viewMonth < 0){ viewMonth = 11; viewYear--; }
+    renderCalendar();
+  });
+  document.getElementById('cal-next').addEventListener('click', () => {
+    viewMonth++; if (viewMonth > 11){ viewMonth = 0; viewYear++; }
+    renderCalendar();
+  });
+
+  renderHeaderAndStats();
+  renderFeed();
+  renderCategory();
+  renderCalendar();
+  renderTimeline();
+
+  const tabButtons = document.querySelectorAll('.tabbar button');
+  const views = { feed: document.getElementById('feed-view'), category: document.getElementById('category-view'), timeline: document.getElementById('timeline-view') };
+  tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabButtons.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+      btn.classList.add('active'); btn.setAttribute('aria-selected','true');
+      Object.values(views).forEach(v => v.classList.remove('active'));
+      views[btn.dataset.target].classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
