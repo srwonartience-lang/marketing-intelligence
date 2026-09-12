@@ -136,8 +136,20 @@
     padding:10px 14px; border:1px solid var(--hairline); border-radius:var(--r-sm); }
   #feed-q::placeholder{ color:var(--body); }
   #feed-q:focus{ outline:2px solid var(--ink); outline-offset:1px; border-color:var(--ink); }
-  #feed-view .list{ display:grid; grid-template-columns:repeat(auto-fill, minmax(430px,1fr)); gap:12px; align-items:start; }
+  #feed-view .list{ display:grid; grid-template-columns:minmax(0,1fr); gap:12px; align-items:start; }
   #feed-view .list > p, #feed-view .list > button{ grid-column:1 / -1; }
+  @media (min-width:940px){
+    #feed-view .list{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+  }
+  /* 1열이지만 카드가 넓어지는 구간: 출처·매체 배지를 오른쪽 레일로 보내 폭을 쓴다 */
+  @media (min-width:761px) and (max-width:939px){
+    .article-card{ display:grid; grid-template-columns:minmax(0,1fr) 190px; column-gap:24px; }
+    .article-card .row-top{ grid-column:1; grid-row:1; }
+    .article-card h3{ grid-column:1; grid-row:2; }
+    .article-card p{ grid-column:1; grid-row:3; margin-bottom:0; max-width:none; }
+    .article-card .row-meta{ grid-column:2; grid-row:1 / span 3; flex-direction:column; align-items:flex-end; justify-content:flex-start; gap:8px; }
+    .article-card .sources{ justify-content:flex-end; }
+  }
   .article-card{ background:var(--canvas); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:24px; }
   .article-card .row-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
   .article-card h3{ margin:6px 0 8px; }
