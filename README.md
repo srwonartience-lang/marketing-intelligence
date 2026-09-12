@@ -110,7 +110,9 @@ python cluster_events.py
 
 ## 자동 실행 (GitHub Actions)
 
-`.github/workflows/collect.yml`이 매일 KST 오전 9시(UTC 00:00)에 `main.py`(수집) → `cluster_events.py`(클러스터링) 순서로 자동 실행합니다.
+`.github/workflows/collect.yml`이 매일 KST 오전 9시(UTC 00:00)에 `main.py`(수집) → `cluster_events.py`(클러스터링) → `classify_content.py`(룰 기반 분류) 순서로 자동 실행합니다.
+
+LLM(Gemini) 기반 분류(`classify_content_llm.py`)는 자동화에 포함하지 않았습니다. 무료 티어 일일 요청 한도가 낮아 매일 자동 실행 시 금방 소진되고, 룰 기반과 결과를 비교/검증하는 동안은 수동으로 실행하는 편이 낫다고 판단했습니다. 필요해지면 `GEMINI_API_KEY`를 GitHub Secrets에 등록하고 워크플로우에 단계를 추가하면 됩니다.
 
 설정 방법:
 

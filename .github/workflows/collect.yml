@@ -30,6 +30,12 @@ jobs:
           GOOGLE_SHEETS_ID: ${{ secrets.GOOGLE_SHEETS_ID }}
         run: python cluster_events.py
 
+      - name: Run rule-based classification
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
+          GOOGLE_SHEETS_ID: ${{ secrets.GOOGLE_SHEETS_ID }}
+        run: python classify_content.py
+
       - name: Upload collector log
         if: always()
         uses: actions/upload-artifact@v4
