@@ -15,14 +15,22 @@
     --canvas-dark:#010120;
     --hairline:#ebebeb;
     --hairline-on-dark:#26263a;
-    --surface-dark-soft:#313641;
+    --surface-soft:#f7f7f8;
+    /* 기존 #8f8f8f는 흰 배경 대비 2.9:1로 WCAG AA(4.5:1) 미달이었다. */
     --body:#6b6b6b;
     --on-dark:#ffffff;
     --on-dark-soft:#a6a6c2;
-    --orange:#fc4c02;
-    --magenta:#ef2cc1;
-    --periwinkle:#bdbbff;
-    --mint:#c8f6f9;
+
+    /* 액션 등급. 화면에서 가장 강한 컬러는 '조치 필요' 하나만 쓴다. */
+    --action:#c33d02;
+    --action-wash:#fdefe8;
+    --action-vivid:#fc4c02;
+    --headsup:#7a5200;
+    --headsup-wash:#fbf2dc;
+    /* mint는 '확인 완료 / 변경 없음' 성공 상태 전용으로 재배정했다. */
+    --done:#0e6e67;
+    --done-wash:#c8f6f9;
+    --done-wash-soft:#e4f7f8;
 
     --r-xs:3.25px;
     --r-sm:4px;
@@ -54,41 +62,113 @@
   .disp-md{ font-size:19px; font-weight:500; line-height:24px; letter-spacing:-0.2px; margin:0; text-wrap:balance; }
   .body-md{ font-size:16px; font-weight:400; line-height:22px; letter-spacing:-0.16px; }
   .body-md-strong{ font-size:16px; font-weight:500; line-height:22px; letter-spacing:-0.16px; }
+  .body-sm{ font-size:14px; font-weight:400; line-height:20px; letter-spacing:-0.1px; }
   .caption{ font-size:13px; font-weight:400; line-height:18px; color:var(--body); }
   .mono-btn{ font-family:"JetBrains Mono",ui-monospace,monospace; font-size:13px; font-weight:500; letter-spacing:0.04em; text-transform:uppercase; }
   .mono-eyebrow{ font-family:"JetBrains Mono",ui-monospace,monospace; font-size:11px; font-weight:500; letter-spacing:0.06em; text-transform:uppercase; }
   .mono-caption{ font-family:"JetBrains Mono",ui-monospace,monospace; font-size:11px; font-weight:400; letter-spacing:0.04em; font-variant-numeric:tabular-nums; }
 
-  .hero{ background:var(--canvas-dark); color:var(--on-dark); padding:44px 32px 40px; }
-  .hero-inner{ max-width:1120px; margin:0 auto; display:flex; align-items:flex-end; justify-content:space-between; gap:32px; flex-wrap:wrap; }
-  .hero .eyebrow{ color:var(--on-dark-soft); margin-bottom:12px; display:block; }
-  .hero h1{ color:var(--on-dark); margin:0 0 8px; }
-  .hero .date{ color:var(--on-dark-soft); }
+  /* ---------- 상단 바: 64px 단일 행 ---------- */
+  .topbar{ background:var(--canvas-dark); color:var(--on-dark); }
+  .topbar-inner{
+    max-width:1120px; margin:0 auto; height:64px; padding:0 32px;
+    display:flex; align-items:center; gap:16px;
+  }
+  .topbar .brand{ font-size:17px; font-weight:500; letter-spacing:-0.3px; color:var(--on-dark); }
+  .topbar .brand .mark{ color:var(--action-vivid); }
+  .topbar .today{ color:var(--on-dark-soft); margin-left:4px; }
+  .topbar .spacer{ flex:1; }
+  .topbar .fresh{ color:var(--on-dark-soft); display:flex; align-items:center; gap:7px; }
+  .topbar .fresh .dot{ width:6px; height:6px; border-radius:50%; background:var(--done-wash); flex:none; }
+  .topbar .fresh.stale .dot{ background:var(--action-vivid); }
 
-  .ribbon{ display:flex; align-items:flex-end; gap:3px; height:48px; flex-shrink:0; }
-  .ribbon i{ display:block; width:6px; border-radius:2px; background:linear-gradient(180deg, var(--orange), var(--magenta), var(--periwinkle)); }
-
-  .stats-row{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:12px; padding:24px 32px 0; }
-  .stat-tile{ background:var(--mint); color:var(--ink); border-radius:var(--r-sm); padding:20px 22px; }
-  .stat-tile .n{ font-size:30px; font-weight:500; letter-spacing:-0.5px; display:block; font-variant-numeric:tabular-nums; }
-  .stat-tile .l{ margin-top:4px; display:block; }
-
-  .note{ padding:16px 32px 0; }
-  .note span{ color:var(--body); }
-
+  /* ---------- 탭 ---------- */
   .tabbar{ margin:20px 32px 0; display:inline-flex; background:var(--hairline); border-radius:var(--r-sm); padding:4px; gap:4px; }
-  .tabbar button{ appearance:none; border:none; cursor:pointer; background:var(--canvas); color:var(--ink); border-radius:var(--r-sm); padding:8px 20px; }
+  .tabbar button{ appearance:none; border:none; cursor:pointer; background:var(--canvas); color:var(--ink); border-radius:var(--r-sm); padding:8px 20px; display:inline-flex; align-items:center; gap:7px; flex:none; white-space:nowrap; }
   .tabbar button:not(.active){ background:transparent; color:var(--body); }
   .tabbar button.active{ background:var(--ink); color:var(--on-primary); }
   .tabbar button:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .tabbar .tab-count{
+    font-family:"JetBrains Mono",monospace; font-size:10px; font-weight:500;
+    background:var(--action-vivid); color:#fff; border-radius:var(--r-full);
+    min-width:16px; height:16px; padding:0 4px; display:inline-flex; align-items:center; justify-content:center;
+  }
+  .tabbar button.active .tab-count{ background:var(--action-vivid); }
+  .tabbar .tab-count:empty, .tabbar .tab-count[hidden]{ display:none; }
 
-  .content{ padding:24px 32px 72px; }
+  .content{ padding:20px 32px 72px; }
   .view{ display:none; }
   .view.active{ display:block; }
 
+  /* ---------- 판정 한 줄 ---------- */
+  .verdict{
+    border:1px solid var(--hairline); border-left:3px solid var(--ink);
+    border-radius:var(--r-sm); padding:16px 20px; margin-bottom:12px;
+    display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
+  }
+  .verdict.has-action{ border-left-color:var(--action-vivid); background:var(--action-wash); border-color:#f4d9cc; }
+  .verdict.all-clear{ border-left-color:var(--done); background:var(--done-wash-soft); border-color:#c2e9eb; }
+  .verdict .v-main{ font-size:19px; font-weight:500; letter-spacing:-0.2px; margin:0; }
+  .verdict.has-action .v-main{ color:var(--action); }
+  .verdict.all-clear .v-main{ color:var(--done); }
+  .verdict .v-sub{ color:var(--body); }
+
+  /* ---------- 내 채널 상태 행 ---------- */
+  .status-row{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:8px; margin-bottom:20px;
+  }
+  .ch{
+    appearance:none; font-family:inherit; text-align:left; cursor:pointer;
+    background:var(--canvas); border:1px solid var(--hairline); border-radius:var(--r-sm);
+    padding:12px 14px; display:flex; flex-direction:column; gap:2px;
+    transition:border-color 0.12s ease;
+  }
+  .ch:hover{ border-color:var(--ink); }
+  .ch:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .ch .ch-name{ font-size:13px; font-weight:500; letter-spacing:-0.1px; }
+  .ch .ch-state{ display:flex; align-items:baseline; gap:6px; }
+  .ch .ch-n{ font-size:22px; font-weight:500; letter-spacing:-0.4px; font-variant-numeric:tabular-nums; line-height:1.2; }
+  .ch .ch-unit{ color:var(--body); font-size:11px; }
+  .ch.zero .ch-n{ color:var(--body); }
+  .ch.zero .ch-name{ color:var(--body); }
+  .ch.has-action{ border-color:var(--action-vivid); background:var(--action-wash); }
+  .ch.has-action .ch-n{ color:var(--action); }
+  .ch.has-action .ch-name{ color:var(--action); }
+  .ch.selected{ border-color:var(--ink); box-shadow:inset 0 0 0 1px var(--ink); }
+
+  /* ---------- 섹션 ---------- */
+  .sec{ margin-bottom:22px; }
+  .sec-head{ display:flex; align-items:baseline; gap:10px; margin-bottom:10px; }
+  .sec-head .sec-label{ color:var(--ink); }
+  .sec-head .sec-n{ color:var(--body); }
+  .sec-head.action .sec-label{ color:var(--action); }
+
+  /* ---------- 카드 ---------- */
+  .list{ display:flex; flex-direction:column; gap:10px; }
+  .card{
+    background:var(--canvas); border:1px solid var(--hairline); border-radius:var(--r-sm);
+    padding:16px 18px; border-left:3px solid var(--hairline);
+  }
+  .card.tier-action{ border-left-color:var(--action-vivid); }
+  .card.tier-heads_up{ border-left-color:var(--headsup); }
+  .card .row-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; flex-wrap:wrap; }
+  .card .tags{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .card h3{ font-size:17px; font-weight:500; line-height:23px; letter-spacing:-0.2px; margin:0 0 6px; text-wrap:balance; }
+  .card p{ margin:0 0 12px; color:var(--ink); max-width:70ch; }
+  .row-meta{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .sources{ display:flex; gap:6px; flex-wrap:wrap; }
+  .sources .badge{ color:var(--body); }
+
+  /* ---------- 배지 ---------- */
   .badge{ display:inline-flex; align-items:center; background:var(--canvas); color:var(--ink); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:2px 8px; }
-  .badge-mint{ background:var(--mint); border-color:var(--mint); color:var(--ink); }
   .badge-outline{ background:transparent; }
+  .badge-plat{ font-family:"JetBrains Mono",monospace; font-size:10.5px; font-weight:500; letter-spacing:0.03em; border-color:#cfcfcf; color:var(--ink); }
+  .badge-official{ background:var(--ink); color:var(--on-primary); border-color:var(--ink); }
+  .badge-new{ background:var(--action-vivid); color:#fff; border-color:var(--action-vivid); }
+  .badge-tier-action{ background:var(--action-wash); color:var(--action); border-color:#f0cdbc; }
+  .badge-tier-heads_up{ background:var(--headsup-wash); color:var(--headsup); border-color:#eadfbe; }
+  .badge-done{ background:var(--done-wash); color:var(--done); border-color:#a9e9ec; }
 
   .chip{ border:none; }
   .chip-geo{ background:var(--cat-geo-wash); color:var(--cat-geo); }
@@ -99,39 +179,57 @@
   .chip-brand{ background:var(--cat-brand-wash); color:var(--cat-brand); }
   .chip-research{ background:var(--cat-research-wash); color:var(--cat-research); }
 
-  .cat-filter{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
-  .cat-pill{ appearance:none; cursor:pointer; border:1px solid var(--hairline); background:var(--canvas); color:var(--ink); border-radius:var(--r-sm); padding:7px 14px; display:inline-flex; align-items:center; gap:7px; }
-  .cat-pill .dot{ width:7px; height:7px; border-radius:50%; background:currentColor; }
-  .cat-pill:hover{ border-color:var(--ink); }
-  .cat-pill:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
-  .cat-pill.geo{ color:var(--cat-geo); }
-  .cat-pill.ai{ color:var(--cat-ai); }
-  .cat-pill.industry{ color:var(--cat-industry); }
-  .cat-pill.perf{ color:var(--cat-perf); }
-  .cat-pill.commerce{ color:var(--cat-commerce); }
-  .cat-pill.brand{ color:var(--cat-brand); }
-  .cat-pill.research{ color:var(--cat-research); }
-  .cat-pill.active{ border-color:currentColor; }
-  .cat-pill.active.geo{ background:var(--cat-geo-wash); color:var(--cat-geo); }
-  .cat-pill.active.ai{ background:var(--cat-ai-wash); color:var(--cat-ai); }
-  .cat-pill.active.industry{ background:var(--cat-industry-wash); color:var(--cat-industry); }
-  .cat-pill.active.perf{ background:var(--cat-perf-wash); color:var(--cat-perf); }
-  .cat-pill.active.commerce{ background:var(--cat-commerce-wash); color:var(--cat-commerce); }
-  .cat-pill.active.brand{ background:var(--cat-brand-wash); color:var(--cat-brand); }
-  .cat-pill.active.research{ background:var(--cat-research-wash); color:var(--cat-research); }
-  .cat-pill.active.all{ background:var(--ink); color:var(--on-primary); border-color:var(--ink); }
-  .cat-pill.active.all .dot{ display:none; }
-
   a{ color:inherit; text-decoration:none; }
   a.badge{ cursor:pointer; }
   a.badge:hover{ border-color:var(--ink); }
-  .article-card h3 a, .tl-card h4 a{ cursor:pointer; }
-  .article-card h3 a:hover, .tl-card h4 a:hover{ text-decoration:underline; text-underline-offset:3px; }
+  .card h3 a, .tl-card h4 a{ cursor:pointer; }
+  .card h3 a:hover, .tl-card h4 a:hover{ text-decoration:underline; text-underline-offset:3px; }
   a.mini-card{ cursor:pointer; transition:border-color 0.12s ease; }
   a.mini-card:hover{ border-color:var(--ink); }
 
-  .feed-controls{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
-  .feed-controls .cat-filter{ margin-bottom:0; }
+  /* ---------- 알아둘 것: 한 줄 목록 ---------- */
+  .oneline{ display:flex; flex-direction:column; border:1px solid var(--hairline); border-radius:var(--r-sm); overflow:hidden; }
+  .oneline a{
+    display:flex; align-items:center; gap:10px; padding:10px 14px;
+    border-bottom:1px solid var(--hairline); cursor:pointer;
+  }
+  .oneline a:last-child{ border-bottom:none; }
+  .oneline a:hover{ background:var(--surface-soft); }
+  .oneline .ol-title{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .oneline .ol-right{ display:flex; align-items:center; gap:6px; flex:none; }
+
+  /* ---------- 확인 완료 바 ---------- */
+  .done-bar{
+    display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+    border:1px solid var(--hairline); border-radius:var(--r-sm); padding:14px 18px; margin-bottom:14px;
+  }
+  .done-bar.is-done{ background:var(--done-wash-soft); border-color:#c2e9eb; }
+  .btn-done{
+    appearance:none; font-family:"JetBrains Mono",monospace; font-size:13px; font-weight:500;
+    letter-spacing:0.04em; text-transform:uppercase; cursor:pointer;
+    background:var(--ink); color:var(--on-primary); border:1px solid var(--ink);
+    border-radius:var(--r-sm); padding:10px 22px;
+  }
+  .btn-done:hover{ background:#1d1d2e; }
+  .btn-done:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .btn-done[disabled]{ background:var(--done-wash); color:var(--done); border-color:#a9e9ec; cursor:default; }
+  .btn-link{
+    appearance:none; background:none; border:none; cursor:pointer; padding:0;
+    font-family:inherit; color:var(--body); text-decoration:underline; text-underline-offset:2px;
+  }
+  .btn-link:hover{ color:var(--ink); }
+  .btn-link:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+
+  .rest-link{ display:flex; align-items:center; gap:8px; color:var(--body); }
+  .rest-link button{ color:var(--ink); }
+
+  .empty{ border:1px dashed var(--hairline); border-radius:var(--r-sm); padding:18px; color:var(--body); }
+
+  /* ---------- 전체 피드 / 카테고리별 / 아카이브 ---------- */
+  /* 피드 레이아웃은 별도 작업에서 다듬어진 것을 그대로 가져왔다. 1120px 컨테이너에서
+     740px로 묶여 있던 목록을 폭에 맞춰 펴고, 1열 구간에서는 요약이 폭을 다 쓰도록
+     출처 배지를 오른쪽 레일로 보낸다. */
+  .feed-controls{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
   #feed-q{ flex:1 1 260px; max-width:420px; font-family:inherit; font-size:15px; line-height:20px; color:var(--ink); background:var(--canvas);
     padding:10px 14px; border:1px solid var(--hairline); border-radius:var(--r-sm); }
   #feed-q::placeholder{ color:var(--body); }
@@ -143,30 +241,51 @@
   }
   /* 1열이지만 카드가 넓어지는 구간: 출처·매체 배지를 오른쪽 레일로 보내 폭을 쓴다 */
   @media (min-width:761px) and (max-width:939px){
-    .article-card{ display:grid; grid-template-columns:minmax(0,1fr) 190px; column-gap:24px; }
-    .article-card .row-top{ grid-column:1; grid-row:1; }
-    .article-card h3{ grid-column:1; grid-row:2; }
-    .article-card p{ grid-column:1; grid-row:3; margin-bottom:0; max-width:none; }
-    .article-card .row-meta{ grid-column:2; grid-row:1 / span 3; flex-direction:column; align-items:flex-end; justify-content:flex-start; gap:8px; }
-    .article-card .sources{ justify-content:flex-end; }
+    #feed-view .card{ display:grid; grid-template-columns:minmax(0,1fr) 190px; column-gap:24px; }
+    #feed-view .card .row-top{ grid-column:1; grid-row:1; }
+    #feed-view .card h3{ grid-column:1; grid-row:2; }
+    #feed-view .card p{ grid-column:1; grid-row:3; margin-bottom:0; max-width:none; }
+    #feed-view .card .row-meta{ grid-column:2; grid-row:1 / span 3; flex-direction:column; align-items:flex-end; justify-content:flex-start; gap:8px; }
+    #feed-view .card .sources{ justify-content:flex-end; }
   }
-  .article-card{ background:var(--canvas); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:24px; }
-  .article-card .row-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
-  .article-card h3{ margin:6px 0 8px; }
-  .article-card p{ margin:0 0 14px; color:var(--ink); max-width:64ch; }
-  .row-meta{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-  .sources{ display:flex; gap:6px; flex-wrap:wrap; }
-  .sources .badge{ color:var(--body); }
+  .filters{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; align-items:center; }
+  .cat-pill{ appearance:none; cursor:pointer; border:1px solid var(--hairline); background:var(--canvas); color:var(--ink); border-radius:var(--r-sm); padding:7px 14px; display:inline-flex; align-items:center; gap:7px; font-family:inherit; }
+  .cat-pill .dot{ width:7px; height:7px; border-radius:50%; background:currentColor; }
+  .cat-pill:hover{ border-color:var(--ink); }
+  .cat-pill:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .cat-pill.geo{ color:var(--cat-geo); }
+  .cat-pill.ai{ color:var(--cat-ai); }
+  .cat-pill.industry{ color:var(--cat-industry); }
+  .cat-pill.perf{ color:var(--cat-perf); }
+  .cat-pill.commerce{ color:var(--cat-commerce); }
+  .cat-pill.brand{ color:var(--cat-brand); }
+  .cat-pill.research{ color:var(--cat-research); }
+  .cat-pill.active{ border-color:currentColor; }
+  .cat-pill.active.geo{ background:var(--cat-geo-wash); }
+  .cat-pill.active.ai{ background:var(--cat-ai-wash); }
+  .cat-pill.active.industry{ background:var(--cat-industry-wash); }
+  .cat-pill.active.perf{ background:var(--cat-perf-wash); }
+  .cat-pill.active.commerce{ background:var(--cat-commerce-wash); }
+  .cat-pill.active.brand{ background:var(--cat-brand-wash); }
+  .cat-pill.active.research{ background:var(--cat-research-wash); }
+  .cat-pill.active.all{ background:var(--ink); color:var(--on-primary); border-color:var(--ink); }
+  .cat-pill.active.all .dot{ display:none; }
 
+  #feed-filters{ margin-bottom:8px; }
+  .filter-note{ margin:0 0 18px; max-width:70ch; }
   .cat-count-label{ margin:0 0 16px; color:var(--body); }
   .cat-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(228px,1fr)); gap:10px; }
   .mini-card{ background:var(--canvas); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:16px; display:flex; flex-direction:column; gap:10px; }
   .mini-card h4{ font-size:15px; font-weight:500; line-height:20px; letter-spacing:-0.1px; margin:0; text-wrap:balance; }
   .mini-card .mini-meta{ display:flex; align-items:center; justify-content:space-between; }
 
-  #timeline-view.active{ display:grid; grid-template-columns:320px 1fr; gap:28px; align-items:start; }
+  .view-intro{ margin-bottom:20px; max-width:70ch; }
+  .view-intro h2{ margin:0 0 8px; }
+  .view-intro p{ margin:0 0 6px; }
+  .view-intro p:last-child{ margin-bottom:0; }
+  .cal-layout{ display:grid; grid-template-columns:380px 1fr; gap:28px; align-items:start; }
 
-  .cal{ background:var(--canvas); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:20px; }
+  .cal{ background:var(--canvas); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:20px 18px; }
   .cal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
   .cal-nav{ display:flex; gap:4px; }
   .cal-nav button{ appearance:none; border:1px solid var(--hairline); background:var(--canvas); color:var(--ink); border-radius:var(--r-xs); width:26px; height:26px; cursor:pointer; font-family:inherit; }
@@ -174,19 +293,18 @@
   .cal-nav button:not(:disabled):hover{ border-color:var(--ink); }
   .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
   .cal-dow{ text-align:center; color:var(--body); padding-bottom:6px; }
-  .cal-day{ position:relative; aspect-ratio:1; display:flex; align-items:center; justify-content:center; padding-bottom:9px; border-radius:var(--r-xs); cursor:pointer; border:1px solid transparent; font-variant-numeric:tabular-nums; }
-  button.cal-day{ appearance:none; background:none; font-family:inherit; font-size:inherit; line-height:inherit; letter-spacing:inherit; color:inherit; width:100%; }
-  button.cal-day:focus-visible{ outline:2px solid var(--ink); outline-offset:1px; }
+  .cal-day{ position:relative; aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:var(--r-xs); cursor:pointer; border:1px solid transparent; font-variant-numeric:tabular-nums; font-size:14px; line-height:18px; }
+  /* 건수가 붙는 날은 숫자를 살짝 올려 아래 라벨과 겹치지 않게 한다. */
+  .cal-day.has-events{ padding-bottom:11px; }
   .cal-day.empty{ cursor:default; }
   .cal-day.has-events:hover{ border-color:var(--hairline); }
-  .cal-day .cnt{ position:absolute; bottom:2px; font-family:"JetBrains Mono",monospace; font-size:10px; color:var(--body); }
+  .cal-day .cnt{ position:absolute; bottom:4px; font-family:"JetBrains Mono",monospace; font-size:9.5px; letter-spacing:-0.03em; color:var(--body); white-space:nowrap; }
   .cal-day.selected{ background:var(--ink); color:var(--on-primary); }
   .cal-day.selected .cnt{ color:var(--on-dark-soft); }
-  .cal-legend{ display:flex; align-items:center; gap:8px; margin-top:14px; padding-top:14px; border-top:1px solid var(--hairline); }
 
   .tl-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:6px; }
   .tl-head .count{ color:var(--body); }
-  .tl-sub{ margin:0 0 18px; }
+  .tl-sub{ margin:0 0 16px; }
 
   .tl{ position:relative; padding-left:26px; display:flex; flex-direction:column; gap:20px; }
   .tl::before{ content:""; position:absolute; left:5px; top:6px; bottom:6px; width:1px; background:var(--hairline); }
@@ -199,102 +317,151 @@
   .tl-more{ color:var(--body); padding:20px 0; }
 
   footer.site-footer{ padding:24px 32px 40px; border-top:1px solid var(--hairline); }
+  footer.site-footer p{ margin:0 0 6px; max-width:80ch; }
 
   @media (max-width:760px){
-    #timeline-view.active{ grid-template-columns:1fr; }
-    .stats-row{ grid-template-columns:1fr; }
-    .hero-inner{ align-items:flex-start; }
-    .content, .hero, .stats-row, .note, .tabbar{ padding-left:18px; padding-right:18px; }
+    .cal-layout{ grid-template-columns:1fr; }
+    .topbar-inner{ padding:0 18px; gap:10px; }
+    .topbar .fresh{ display:none; }
+    .content, .tabbar{ padding-left:18px; padding-right:18px; }
+    /* 탭 이름이 길어 좁은 화면에서 줄바꿈으로 깨지지 않도록, 줄이는 대신 가로 스크롤한다. */
+    .tabbar{ margin-left:18px; margin-right:18px; overflow-x:auto; max-width:calc(100% - 36px); justify-content:flex-start; }
+    .tabbar button{ padding:8px 14px; }
   }
 </style>
 </head>
 <body>
 
-<div class="hero">
-  <div class="hero-inner">
-    <div>
-      <span class="eyebrow mono-eyebrow">Marketing Intelligence · Daily Brief</span>
-      <h1 class="disp-xl">Signal Desk</h1>
-      <span class="date body-md" id="hero-date">최근 업데이트 —</span>
-    </div>
-    <div class="ribbon" aria-hidden="true">
-      <i style="height:60%"></i><i style="height:100%"></i><i style="height:40%"></i>
-      <i style="height:80%"></i><i style="height:55%"></i><i style="height:95%"></i>
-      <i style="height:35%"></i><i style="height:70%"></i>
-    </div>
+<div class="topbar">
+  <div class="topbar-inner">
+    <span class="brand"><span class="mark">●</span> Signal Desk</span>
+    <span class="today mono-caption" id="top-today">—</span>
+    <span class="spacer"></span>
+    <span class="fresh mono-caption" id="top-fresh"><span class="dot"></span><span id="top-fresh-text">—</span></span>
   </div>
 </div>
 
 <div class="wrap">
-  <div class="stats-row">
-    <div class="stat-tile"><span class="n" id="stat-events">–</span><span class="l mono-eyebrow">분류된 이벤트</span></div>
-    <div class="stat-tile"><span class="n" id="stat-categories">–</span><span class="l mono-eyebrow">카테고리</span></div>
-    <div class="stat-tile"><span class="n" id="stat-sources">–</span><span class="l mono-eyebrow">매체 수</span></div>
-  </div>
-
-  <p class="note"><span class="caption">Google Sheets DB에서 카테고리 분류가 확정된 이벤트만 표시합니다. 매일 자동으로 수집·분류되어 이 페이지도 함께 갱신됩니다. 제목을 클릭하면 원문으로 연결됩니다.</span></p>
-
   <div class="tabbar" role="tablist">
-    <button class="mono-btn active" data-target="feed" role="tab" aria-selected="true">전체 피드</button>
+    <button class="mono-btn active" data-target="today" role="tab" aria-selected="true">오늘 <span class="tab-count" id="tab-count-today" hidden></span></button>
+    <button class="mono-btn" data-target="calendar" role="tab" aria-selected="false">업데이트 캘린더</button>
+    <button class="mono-btn" data-target="feed" role="tab" aria-selected="false">전체 피드</button>
     <button class="mono-btn" data-target="category" role="tab" aria-selected="false">카테고리별</button>
-    <button class="mono-btn" data-target="timeline" role="tab" aria-selected="false">타임라인</button>
   </div>
 
   <div class="content">
 
-    <div id="feed-view" class="view active">
+    <div id="today-view" class="view active">
+      <div class="verdict" id="verdict">
+        <p class="v-main" id="verdict-main">—</p>
+        <span class="v-sub caption" id="verdict-sub"></span>
+      </div>
+
+      <div class="status-row" id="status-row"></div>
+
+      <div class="sec" id="sec-action" hidden>
+        <div class="sec-head action">
+          <span class="sec-label disp-md">조치 필요</span>
+          <span class="sec-n mono-caption" id="action-n"></span>
+        </div>
+        <div class="list" id="action-list"></div>
+      </div>
+
+      <div class="sec" id="sec-headsup" hidden>
+        <div class="sec-head">
+          <span class="sec-label disp-md">알아둘 것</span>
+          <span class="sec-n mono-caption" id="headsup-n"></span>
+        </div>
+        <div class="oneline" id="headsup-list"></div>
+      </div>
+
+      <div class="done-bar" id="done-bar">
+        <button class="btn-done" id="btn-done">오늘 확인 완료</button>
+        <span class="rest-link caption" id="done-note"></span>
+      </div>
+
+      <p class="caption" id="context-note"></p>
+    </div>
+
+    <div id="calendar-view" class="view">
+      <div class="view-intro">
+        <h2 class="disp-md">업데이트 캘린더</h2>
+        <p class="body-md">날짜를 고르면 그날 들어온 마케팅 업계 소식 전체를 시간순으로 봅니다.</p>
+      </div>
+      <div class="cal-layout">
+        <div class="cal">
+          <div class="cal-head">
+            <span class="disp-md" id="cal-label"></span>
+            <div class="cal-nav">
+              <button id="cal-prev" aria-label="이전 달">‹</button>
+              <button id="cal-next" aria-label="다음 달">›</button>
+            </div>
+          </div>
+          <div class="cal-grid" id="cal-grid"></div>
+        </div>
+        <div>
+          <div class="tl-head">
+            <span class="disp-md" id="tl-date-label"></span>
+            <span class="mono-caption count" id="tl-count"></span>
+          </div>
+          <p class="caption tl-sub" id="tl-sub"></p>
+          <div class="tl" id="tl-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="feed-view" class="view">
       <div class="feed-controls">
         <input id="feed-q" type="search" placeholder="제목 · 요약 · 매체 검색" aria-label="피드 검색" autocomplete="off">
-        <div class="cat-filter" id="range-filter">
+        <div class="filters" id="range-filter">
           <button class="cat-pill mono-btn all active" data-days="7">최근 7일</button>
           <button class="cat-pill mono-btn all" data-days="30">최근 30일</button>
           <button class="cat-pill mono-btn all" data-days="0">전체 기간</button>
         </div>
       </div>
-      <p class="cat-count-label caption" id="feed-count"></p>
+      <div class="filters" id="feed-filters"></div>
+      <p class="caption filter-note" id="feed-note"></p>
       <div class="list" id="feed-list"></div>
     </div>
 
     <div id="category-view" class="view">
-      <div class="cat-filter" id="cat-filter"></div>
+      <div class="filters" id="cat-filter"></div>
       <p class="cat-count-label caption" id="cat-count-label"></p>
       <div class="cat-grid" id="cat-grid-items"></div>
-    </div>
-
-    <div id="timeline-view" class="view">
-      <div class="cal">
-        <div class="cal-head">
-          <span class="disp-md" id="cal-label"></span>
-          <div class="cal-nav">
-            <button id="cal-prev" aria-label="이전 달">‹</button>
-            <button id="cal-next" aria-label="다음 달">›</button>
-          </div>
-        </div>
-        <div class="cal-grid" id="cal-grid"></div>
-        <div class="cal-legend">
-          <span class="cal-day selected" style="width:20px;height:20px;font-size:10px;flex:none;display:inline-flex;">·</span>
-          <span class="caption">선택된 날짜 · 숫자는 그날 분류된 이벤트 수</span>
-        </div>
-      </div>
-      <div>
-        <div class="tl-head">
-          <span class="disp-md" id="tl-date-label"></span>
-          <span class="mono-caption count" id="tl-count"></span>
-        </div>
-        <div class="tl" id="tl-list"></div>
-      </div>
     </div>
 
   </div>
 </div>
 
 <footer class="site-footer">
-  <span class="caption">Marketing Intelligence · <span id="generated-at"></span> 생성</span>
+  <p class="caption">RSS 수집은 매일 1회(KST 06:00) 실행됩니다. 이 화면은 <strong>실시간이 아니며</strong>, 마지막 수집 이후의 변경은 다음 실행에 반영됩니다.</p>
+  <p class="caption">조치 등급은 소스 등급(공식/매체)과 본문 키워드로 자동 판정한 값입니다. 중요한 변경은 원문 공지로 확인하세요.</p>
+  <p class="caption">Marketing Intelligence · <span id="generated-at"></span> 생성</p>
 </footer>
 
 <script>
   const CLASSIFIED_EVENTS = __CLASSIFIED_EVENTS_JSON__;
+  const PLATFORMS = __PLATFORMS_JSON__;
   const GENERATED_AT = __GENERATED_AT_JSON__;
+
+  const LS_LAST_CHECKED = 'signaldesk.lastCheckedAt';
+  const LS_MY_PLATFORMS = 'signaldesk.myPlatforms';
+
+  const TIER_ACTION = 'action';
+  const TIER_HEADS_UP = 'heads_up';
+  const TIER_LABEL = { action:'조치 필요', heads_up:'알아둘 것', context:'참고' };
+  // 조치 필요 카드 실측 높이는 172px이다. 3장이면 1440x900 첫 화면(약 507px + 섹션
+  // 헤드)을 넘겨 "스크롤 없이 끝난다"는 약속이 깨진다. 2장까지만 펼치고 나머지는
+  // 한 줄 목록으로 내린다.
+  const ACTION_CARD_LIMIT = 2;
+  const TIER_ORDER_VIEW = ['action', 'heads_up', 'context'];
+  // 등급 이름만으로는 기준이 드러나지 않아, 선택한 등급 하나만 한 줄로 설명한다.
+  const TIER_NOTE = {
+    all: '분류가 끝난 소식 전체입니다.',
+    action: '기존 캠페인·계정 설정이 영향받는 변경입니다. 지원 종료, 기능 제거, 신규 광고주 요건 등.',
+    heads_up: '신규 기능·베타·출시입니다. 지금 손댈 필요는 없지만 다음 캠페인 설계에 영향을 줍니다.',
+    context: '업계 동향·리서치·사례입니다. 특정 채널에 조치할 것이 없는 소식입니다.',
+  };
 
   const CATEGORY_ORDER = ["SEO / GEO","AI Trends","Data & AI Research","Marketing Industry","Performance Marketing","Commerce & Retail","Brand Marketing"];
   const CATEGORY_KEY = {
@@ -307,63 +474,307 @@
     "Brand Marketing":"brand",
   };
 
+  /* ---------- 유틸 ---------- */
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
   function fmtDateLabel(d){
     const dt = new Date(d + 'T00:00:00');
     const days = ['일','월','화','수','목','금','토'];
-    const year = dt.getFullYear() !== new Date().getFullYear() ? `${dt.getFullYear()}년 ` : '';
-    return `${year}${dt.getMonth()+1}월 ${dt.getDate()}일 (${days[dt.getDay()]})`;
+    return `${dt.getMonth()+1}월 ${dt.getDate()}일 (${days[dt.getDay()]})`;
   }
+  function fmtStamp(iso){
+    const dt = new Date(iso);
+    if (isNaN(dt)) return '—';
+    const p = n => String(n).padStart(2,'0');
+    return `${p(dt.getMonth()+1)}-${p(dt.getDate())} ${p(dt.getHours())}:${p(dt.getMinutes())}`;
+  }
+  function lsGet(key){ try { return localStorage.getItem(key); } catch(e){ return null; } }
+  function lsSet(key, value){ try { localStorage.setItem(key, value); } catch(e){ /* 시크릿 창 등 */ } }
+  function lsRemove(key){ try { localStorage.removeItem(key); } catch(e){ /* noop */ } }
+
   function primaryUrl(ev){ return ev.sources[0] ? ev.sources[0].url : '#'; }
-  function sourcePillsHTML(ev){
-    return ev.sources.map(s => `<a class="badge caption" href="${s.url}" target="_blank" rel="noopener">${s.name}</a>`).join('');
-  }
   function countLabel(ev){ return ev.sources.length > 1 ? `${ev.sources.length}개 매체 보도` : '단일 매체'; }
-
+  function sourcePillsHTML(ev){
+    return ev.sources.map(s =>
+      `<a class="badge caption${s.official ? ' badge-official' : ''}" href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}${s.official ? ' 공식' : ''}</a>`
+    ).join('');
+  }
+  function platformBadgesHTML(ev){
+    return ev.platforms.map(p => `<span class="badge badge-plat">${esc(p.label)}</span>`).join('');
+  }
   function chipHTML(ev){
-    return `<span class="badge chip mono-eyebrow chip-${CATEGORY_KEY[ev.category]}">${ev.category}</span>`;
+    return `<span class="badge chip mono-eyebrow chip-${CATEGORY_KEY[ev.category] || 'industry'}">${esc(ev.category)}</span>`;
+  }
+  function byRecency(a,b){ return (b.date+b.time).localeCompare(a.date+a.time); }
+
+  /* ---------- 확인 시점(NEW 판정 기준) ----------
+     '새로 생긴 것'은 이벤트가 마지막으로 보도된 시점이 아니라 처음 발견된
+     시점(first_seen_at) 기준이다. 한 번도 확인하지 않은 첫 방문에서는 데이터
+     최신 시점의 24시간 전을 기준으로 삼아, 빈 화면이 아니라 최근 하루치를
+     보여준다. */
+  /* 시각 비교는 반드시 숫자로 한다. 파이프라인이 쓰는 first_seen_at은
+     "2026-09-10T17:00:30+00:00" 형식이고 '확인 완료'가 저장하는 값은
+     toISOString()의 "2026-09-10T17:00:30.000Z" 형식이라, 문자열로 비교하면
+     같은 시각인데도 '+'와 '.'의 문자 코드 차이로 판정이 뒤집힌다. */
+  function toTime(iso){
+    const t = Date.parse(iso);
+    return isNaN(t) ? 0 : t;
   }
 
-  function articleCardHTML(ev, compact){
-    if (compact){
-      return `<a class="mini-card" href="${primaryUrl(ev)}" target="_blank" rel="noopener">
-        <div class="row-top">${chipHTML(ev)}</div>
-        <h4>${ev.title}</h4>
-        <div class="mini-meta">
-          <span class="mono-caption">${ev.sources[0].name}</span>
-          <span class="mono-caption">${fmtDateLabel(ev.date)}</span>
-        </div>
-      </a>`;
+  const latestFirstSeen = CLASSIFIED_EVENTS.reduce(
+    (max, ev) => (toTime(ev.first_seen_at) > toTime(max) ? ev.first_seen_at : max), ''
+  );
+
+  function defaultCheckpoint(){
+    const base = toTime(latestFirstSeen);
+    if (!base) return new Date(0).toISOString();
+    return new Date(base - 24*60*60*1000).toISOString();
+  }
+  function getCheckpoint(){ return lsGet(LS_LAST_CHECKED) || defaultCheckpoint(); }
+  function hasCheckedBefore(){ return !!lsGet(LS_LAST_CHECKED); }
+  function isNew(ev){ return toTime(ev.first_seen_at) > toTime(getCheckpoint()); }
+
+  /* ---------- 내 채널 ---------- */
+  const defaultPlatformIds = PLATFORMS.filter(p => p.is_default).map(p => p.id);
+  const myPlatformIds = (() => {
+    const stored = lsGet(LS_MY_PLATFORMS);
+    if (!stored) return defaultPlatformIds;
+    try {
+      const parsed = JSON.parse(stored);
+      const valid = parsed.filter(id => PLATFORMS.some(p => p.id === id));
+      return valid.length ? valid : defaultPlatformIds;
+    } catch(e){ return defaultPlatformIds; }
+  })();
+  const myPlatforms = myPlatformIds
+    .map(id => PLATFORMS.find(p => p.id === id))
+    .filter(Boolean);
+
+  /* 채널이 커버하는 플랫폼 집합. YouTube Ads 타일은 YouTube 변경도 함께 센다.
+     covers가 없는 예전 데이터로도 동작하도록 자기 자신을 기본값으로 둔다. */
+  function coversOf(platform){
+    return (platform.covers && platform.covers.length) ? platform.covers : [platform.id];
+  }
+  const myCoveredIds = new Set(myPlatforms.flatMap(coversOf));
+
+  let channelFilter = null; // 상태 타일을 누르면 그 채널만 본다
+
+  function touchesMyChannels(ev){
+    return ev.platforms.some(p => myCoveredIds.has(p.id));
+  }
+  function inChannelFilter(ev){
+    if (!channelFilter) return true;
+    const platform = myPlatforms.find(p => p.id === channelFilter);
+    if (!platform) return true;
+    const covered = coversOf(platform);
+    return ev.platforms.some(p => covered.includes(p.id));
+  }
+
+  /* ---------- 오늘 화면 ---------- */
+  function todayPool(){
+    return CLASSIFIED_EVENTS.filter(ev => isNew(ev) && touchesMyChannels(ev) && inChannelFilter(ev));
+  }
+  function tierItems(tier){
+    return todayPool().filter(ev => ev.action_tier === tier).sort(byRecency);
+  }
+
+  function renderTopbar(){
+    const now = new Date();
+    const days = ['일','월','화','수','목','금','토'];
+    const p = n => String(n).padStart(2,'0');
+    document.getElementById('top-today').textContent =
+      `${now.getFullYear()}-${p(now.getMonth()+1)}-${p(now.getDate())} (${days[now.getDay()]})`;
+
+    const fresh = document.getElementById('top-fresh');
+    const text = document.getElementById('top-fresh-text');
+    if (!latestFirstSeen){
+      text.textContent = '수집 데이터 없음';
+      fresh.classList.add('stale');
+    } else {
+      const ageHours = (Date.now() - new Date(latestFirstSeen).getTime()) / 36e5;
+      text.textContent = `최근 수집 ${fmtStamp(latestFirstSeen)}`;
+      // 하루 1회 실행이므로 36시간을 넘으면 파이프라인이 멈춘 것으로 본다.
+      if (ageHours > 36){
+        fresh.classList.add('stale');
+        text.textContent += ' · 갱신 지연';
+      }
     }
-    const multi = ev.sources.length > 1;
-    return `<div class="article-card">
+    document.getElementById('generated-at').textContent = GENERATED_AT;
+  }
+
+  function renderVerdict(){
+    const actions = tierItems(TIER_ACTION);
+    const headsups = tierItems(TIER_HEADS_UP);
+    const box = document.getElementById('verdict');
+    const main = document.getElementById('verdict-main');
+    const sub = document.getElementById('verdict-sub');
+    const channelNames = (channelFilter
+      ? myPlatforms.filter(p => p.id === channelFilter)
+      : myPlatforms).map(p => p.name);
+    const scope = channelNames.length ? channelNames.join(' · ') : '선택한 채널';
+
+    box.classList.remove('has-action','all-clear');
+    if (actions.length){
+      box.classList.add('has-action');
+      main.textContent = `조치가 필요한 변경 ${actions.length}건`;
+      sub.textContent = `${scope} · 알아둘 것 ${headsups.length}건`;
+    } else if (headsups.length){
+      main.textContent = '조치가 필요한 변경은 없습니다';
+      sub.textContent = `${scope} · 알아둘 것 ${headsups.length}건`;
+    } else {
+      box.classList.add('all-clear');
+      main.textContent = '오늘 확인할 변경이 없습니다';
+      sub.textContent = `${scope} 모두 이상 없음`;
+    }
+
+    const tabCount = document.getElementById('tab-count-today');
+    if (actions.length){
+      tabCount.textContent = actions.length;
+      tabCount.hidden = false;
+    } else {
+      tabCount.hidden = true;
+    }
+  }
+
+  function renderStatusRow(){
+    const row = document.getElementById('status-row');
+    if (!myPlatforms.length){
+      row.innerHTML = `<div class="empty caption">platforms 시트에 활성 플랫폼이 없습니다. seed_platforms.py를 실행하세요.</div>`;
+      return;
+    }
+    row.innerHTML = myPlatforms.map(p => {
+      const covered = coversOf(p);
+      const mine = CLASSIFIED_EVENTS.filter(ev => isNew(ev) && ev.platforms.some(x => covered.includes(x.id)));
+      const actionCount = mine.filter(ev => ev.action_tier === TIER_ACTION).length;
+      const total = mine.filter(ev => ev.action_tier === TIER_ACTION || ev.action_tier === TIER_HEADS_UP).length;
+      const cls = [
+        'ch',
+        actionCount ? 'has-action' : (total ? '' : 'zero'),
+        channelFilter === p.id ? 'selected' : '',
+      ].filter(Boolean).join(' ');
+      const unit = actionCount ? '건 조치 필요' : (total ? '건 알아둘 것' : '건');
+      return `<button class="${cls}" data-platform="${esc(p.id)}" aria-pressed="${channelFilter === p.id}">
+        <span class="ch-name">${esc(p.name)}</span>
+        <span class="ch-state"><span class="ch-n">${actionCount || total}</span><span class="ch-unit">${unit}</span></span>
+      </button>`;
+    }).join('');
+
+    row.querySelectorAll('.ch').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.platform;
+        channelFilter = (channelFilter === id) ? null : id;
+        renderToday();
+      });
+    });
+  }
+
+  function actionCardHTML(ev){
+    return `<div class="card tier-${esc(ev.action_tier)}">
       <div class="row-top">
-        ${chipHTML(ev)}
-        <span class="mono-caption">${fmtDateLabel(ev.date)} · ${ev.time}</span>
+        <div class="tags">
+          <span class="badge mono-eyebrow badge-tier-${esc(ev.action_tier)}">${TIER_LABEL[ev.action_tier]}</span>
+          ${platformBadgesHTML(ev)}
+          ${isNew(ev) ? '<span class="badge mono-eyebrow badge-new">NEW</span>' : ''}
+        </div>
+        <span class="mono-caption">${fmtDateLabel(ev.date)} · ${esc(ev.time)}</span>
       </div>
-      <h3 class="disp-md"><a href="${primaryUrl(ev)}" target="_blank" rel="noopener">${ev.title}</a></h3>
-      <p class="body-md">${ev.summary}</p>
+      <h3><a href="${esc(primaryUrl(ev))}" target="_blank" rel="noopener">${esc(ev.title)}</a></h3>
+      <p class="body-md">${esc(ev.summary)}</p>
       <div class="row-meta">
         <div class="sources">${sourcePillsHTML(ev)}</div>
-        <span class="badge ${multi ? 'badge-mint mono-caption' : 'mono-caption'}">${countLabel(ev)}</span>
+        <span class="badge mono-caption">${countLabel(ev)}</span>
       </div>
     </div>`;
   }
 
-  function renderHeaderAndStats(){
-    document.getElementById('hero-date').textContent = CLASSIFIED_EVENTS.length
-      ? `최근 업데이트 — ${fmtDateLabel([...CLASSIFIED_EVENTS].sort((a,b) => (b.date+b.time).localeCompare(a.date+a.time))[0].date)} 수집분 기준`
-      : '아직 분류된 이벤트가 없습니다';
-    document.getElementById('stat-events').textContent = CLASSIFIED_EVENTS.length;
-    document.getElementById('stat-categories').textContent = new Set(CLASSIFIED_EVENTS.map(e => e.category)).size;
-    const sourceSet = new Set();
-    CLASSIFIED_EVENTS.forEach(e => e.sources.forEach(s => sourceSet.add(s.name)));
-    document.getElementById('stat-sources').textContent = sourceSet.size;
-    document.getElementById('generated-at').textContent = GENERATED_AT;
+  function onelineHTML(ev){
+    return `<a href="${esc(primaryUrl(ev))}" target="_blank" rel="noopener">
+      <span class="ol-title body-md">${esc(ev.title)}</span>
+      <span class="ol-right">
+        ${platformBadgesHTML(ev)}
+        ${ev.is_official ? '<span class="badge mono-eyebrow badge-official">공식</span>' : ''}
+        <span class="mono-caption">${fmtDateLabel(ev.date)}</span>
+      </span>
+    </a>`;
   }
 
-  const LATEST_DATE = CLASSIFIED_EVENTS.reduce((m,e) => e.date > m ? e.date : m, '');
-  let rangeDays = 7;
+  function renderTodayLists(){
+    const actions = tierItems(TIER_ACTION);
+    const headsups = tierItems(TIER_HEADS_UP);
+
+    const secAction = document.getElementById('sec-action');
+    secAction.hidden = actions.length === 0;
+    if (actions.length){
+      const shown = actions.slice(0, ACTION_CARD_LIMIT);
+      const rest = actions.length - shown.length;
+      document.getElementById('action-n').textContent = `${actions.length}건`;
+      document.getElementById('action-list').innerHTML =
+        shown.map(actionCardHTML).join('') +
+        (rest > 0 ? `<div class="oneline">${actions.slice(ACTION_CARD_LIMIT).map(onelineHTML).join('')}</div>` : '');
+    }
+
+    const secHeads = document.getElementById('sec-headsup');
+    secHeads.hidden = headsups.length === 0;
+    if (headsups.length){
+      document.getElementById('headsup-n').textContent = `${headsups.length}건`;
+      document.getElementById('headsup-list').innerHTML = headsups.map(onelineHTML).join('');
+    }
+
+    const contextCount = CLASSIFIED_EVENTS.filter(ev => isNew(ev) && ev.action_tier === 'context').length;
+    const offChannel = CLASSIFIED_EVENTS.filter(ev => isNew(ev) && !touchesMyChannels(ev)).length;
+    const note = document.getElementById('context-note');
+    const parts = [];
+    if (contextCount) parts.push(`참고 ${contextCount}건`);
+    if (offChannel) parts.push(`내 채널 외 ${offChannel}건`);
+    note.innerHTML = parts.length
+      ? `${parts.join(' · ')} — <button class="btn-link" id="goto-feed">전체 피드에서 보기 →</button>`
+      : '';
+    const goto = document.getElementById('goto-feed');
+    if (goto) goto.addEventListener('click', () => selectTab('feed'));
+  }
+
+  function renderDoneBar(){
+    const bar = document.getElementById('done-bar');
+    const btn = document.getElementById('btn-done');
+    const note = document.getElementById('done-note');
+    const pending = tierItems(TIER_ACTION).length + tierItems(TIER_HEADS_UP).length;
+    const checkedAt = lsGet(LS_LAST_CHECKED);
+
+    bar.classList.toggle('is-done', pending === 0 && !!checkedAt);
+    if (pending === 0 && checkedAt){
+      btn.disabled = true;
+      btn.textContent = '확인 완료';
+    } else {
+      btn.disabled = false;
+      btn.textContent = pending ? `오늘 확인 완료 (${pending}건)` : '오늘 확인 완료';
+    }
+
+    note.innerHTML = checkedAt
+      ? `마지막 확인 ${fmtStamp(checkedAt)} · <button class="btn-link" id="btn-reset">지난 항목 다시 보기</button>`
+      : `<span>확인을 완료하면 다음 방문 때 새로 들어온 것만 보입니다.</span>`;
+    const reset = document.getElementById('btn-reset');
+    if (reset) reset.addEventListener('click', () => { lsRemove(LS_LAST_CHECKED); renderToday(); });
+  }
+
+  function renderToday(){
+    renderVerdict();
+    renderStatusRow();
+    renderTodayLists();
+    renderDoneBar();
+  }
+
+  document.getElementById('btn-done').addEventListener('click', () => {
+    if (document.getElementById('btn-done').disabled) return;
+    lsSet(LS_LAST_CHECKED, new Date().toISOString());
+    renderToday();
+  });
+
+  /* ---------- 전체 피드 ---------- */
+  let feedTier = 'all';
+  let rangeDays = 7;   // 기본은 최근 7일. 전체 368건을 한 번에 펼치면 훑을 수가 없다.
   let feedQuery = '';
+
+  const LATEST_DATE = CLASSIFIED_EVENTS.reduce((m, e) => (e.date > m ? e.date : m), '');
 
   function cutoffDate(days){
     if (!days || !LATEST_DATE) return '';
@@ -377,24 +788,67 @@
       .toLowerCase().includes(feedQuery);
   }
 
-  function renderFeed(){
-    const cutoff = cutoffDate(rangeDays);
-    const matched = CLASSIFIED_EVENTS.filter(matchesQuery);
-    const items = matched.filter(ev => !cutoff || ev.date >= cutoff)
-      .sort((a,b) => (b.date+b.time).localeCompare(a.date+a.time));
-    const rangeLabel = rangeDays ? `최근 ${rangeDays}일` : '전체 기간';
+  function feedCardHTML(ev){
+    const tierBadge = ev.action_tier === 'context'
+      ? ''
+      : `<span class="badge mono-eyebrow badge-tier-${esc(ev.action_tier)}">${TIER_LABEL[ev.action_tier]}</span>`;
+    return `<div class="card tier-${esc(ev.action_tier)}">
+      <div class="row-top">
+        <div class="tags">${tierBadge}${chipHTML(ev)}${platformBadgesHTML(ev)}</div>
+        <span class="mono-caption">${fmtDateLabel(ev.date)} · ${esc(ev.time)}</span>
+      </div>
+      <h3><a href="${esc(primaryUrl(ev))}" target="_blank" rel="noopener">${esc(ev.title)}</a></h3>
+      <p class="body-md">${esc(ev.summary)}</p>
+      <div class="row-meta">
+        <div class="sources">${sourcePillsHTML(ev)}</div>
+        <span class="badge mono-caption">${countLabel(ev)}</span>
+      </div>
+    </div>`;
+  }
 
-    document.getElementById('feed-count').textContent =
-      `${rangeLabel}${feedQuery ? ` · “${feedQuery}” 검색` : ''} · ${items.length}건`;
+  function renderFeed(){
+    // 등급 칩의 건수는 검색어·기간을 적용한 뒤의 수여야 한다. 전체 코퍼스 기준으로
+    // 세면 "조치 필요 1"을 눌렀는데 최근 7일에는 0건인 상황이 설명되지 않는다.
+    const cutoff = cutoffDate(rangeDays);
+    const scoped = CLASSIFIED_EVENTS.filter(ev => matchesQuery(ev) && (!cutoff || ev.date >= cutoff));
+
+    const counts = {
+      all: scoped.length,
+      action: scoped.filter(e => e.action_tier === 'action').length,
+      heads_up: scoped.filter(e => e.action_tier === 'heads_up').length,
+      context: scoped.filter(e => e.action_tier === 'context').length,
+    };
+    const pill = (key, label) =>
+      `<button class="cat-pill mono-btn${feedTier === key ? ' active all' : ''}" data-tier="${key}">${label} <span class="mono-caption" style="color:inherit">${counts[key]}</span></button>`;
+    document.getElementById('feed-filters').innerHTML =
+      pill('all','전체') + pill('action','조치 필요') + pill('heads_up','알아둘 것') + pill('context','참고');
+
+    document.querySelectorAll('#feed-filters .cat-pill').forEach(btn => {
+      btn.addEventListener('click', () => { feedTier = btn.dataset.tier; renderFeed(); });
+    });
+
+    const items = (feedTier === 'all' ? scoped : scoped.filter(e => e.action_tier === feedTier))
+      .slice().sort(byRecency);
+
+    const rangeLabel = rangeDays ? `최근 ${rangeDays}일` : '전체 기간';
+    const queryLabel = feedQuery ? ` · “${feedQuery}” 검색` : '';
+    const tierNote = feedTier === 'all' ? '' : ` — ${TIER_NOTE[feedTier]}`;
+    document.getElementById('feed-note').textContent =
+      `${rangeLabel}${queryLabel} · ${items.length}건${tierNote}`;
 
     if (items.length){
-      document.getElementById('feed-list').innerHTML = items.map(ev => articleCardHTML(ev,false)).join('');
+      document.getElementById('feed-list').innerHTML = items.map(feedCardHTML).join('');
       return;
     }
-    const outside = matched.length - items.length;
+
+    // 기간 밖에 같은 조건의 소식이 있으면 범위를 넓힐 길을 준다. 빈 화면만 보여주면
+    // 사용자는 데이터가 없는 건지 필터가 좁은 건지 알 수 없다.
+    const sameTier = CLASSIFIED_EVENTS.filter(ev =>
+      matchesQuery(ev) && (feedTier === 'all' || ev.action_tier === feedTier));
+    const outside = sameTier.length - items.length;
     document.getElementById('feed-list').innerHTML =
-      `<p class="body-md">${rangeLabel}에는 해당하는 이벤트가 없습니다.</p>` +
-      (outside ? `<button class="cat-pill mono-btn all" id="feed-widen">전체 기간에서 ${outside}건 보기</button>` : '');
+      `<p class="body-md">${rangeLabel}에는 해당하는 소식이 없습니다.</p>` +
+      (outside && rangeDays ? `<button class="cat-pill mono-btn all" id="feed-widen">전체 기간에서 ${outside}건 보기</button>` : '');
     const widen = document.getElementById('feed-widen');
     if (widen) widen.addEventListener('click', () => setRange(0));
   }
@@ -406,7 +860,26 @@
     renderFeed();
   }
 
+  document.querySelectorAll('#range-filter button').forEach(b =>
+    b.addEventListener('click', () => setRange(Number(b.dataset.days))));
+  document.getElementById('feed-q').addEventListener('input', e => {
+    feedQuery = e.target.value.trim().toLowerCase();
+    renderFeed();
+  });
+
+  /* ---------- 카테고리별 ---------- */
   let activeCategory = 'all';
+
+  function miniCardHTML(ev){
+    return `<a class="mini-card" href="${esc(primaryUrl(ev))}" target="_blank" rel="noopener">
+      <div class="row-top">${chipHTML(ev)}</div>
+      <h4>${esc(ev.title)}</h4>
+      <div class="mini-meta">
+        <span class="mono-caption">${esc(ev.sources[0].name)}</span>
+        <span class="mono-caption">${fmtDateLabel(ev.date)}</span>
+      </div>
+    </a>`;
+  }
 
   function renderCategoryFilter(){
     const byCat = {};
@@ -418,27 +891,28 @@
       ...present.map(cat => {
         const key = CATEGORY_KEY[cat];
         const isActive = activeCategory === cat;
-        return `<button class="cat-pill mono-btn ${key}${isActive ? ` active ${key}` : ''}" data-cat="${cat}">
-          <span class="dot"></span>${cat} <span class="mono-caption" style="color:inherit">${byCat[cat].length}</span>
+        return `<button class="cat-pill mono-btn ${key}${isActive ? ` active ${key}` : ''}" data-cat="${esc(cat)}">
+          <span class="dot"></span>${esc(cat)} <span class="mono-caption" style="color:inherit">${byCat[cat].length}</span>
         </button>`;
       })
     ];
     document.getElementById('cat-filter').innerHTML = pills.join('');
 
-    document.querySelectorAll('.cat-pill').forEach(btn => {
+    document.querySelectorAll('#cat-filter .cat-pill').forEach(btn => {
       btn.addEventListener('click', () => {
         activeCategory = btn.dataset.cat;
-        renderCategoryFilter();
-        renderCategoryGrid();
+        renderCategory();
       });
     });
   }
 
   function renderCategoryGrid(){
     const items = (activeCategory === 'all' ? CLASSIFIED_EVENTS : CLASSIFIED_EVENTS.filter(e => e.category === activeCategory))
-      .slice().sort((a,b) => (b.date+b.time).localeCompare(a.date+a.time));
+      .slice().sort(byRecency);
     document.getElementById('cat-count-label').textContent = `${activeCategory === 'all' ? '전체' : activeCategory} · ${items.length}개 이벤트`;
-    document.getElementById('cat-grid-items').innerHTML = items.map(ev => articleCardHTML(ev,true)).join('');
+    document.getElementById('cat-grid-items').innerHTML = items.length
+      ? items.map(miniCardHTML).join('')
+      : `<div class="empty caption">해당 카테고리에 이벤트가 없습니다.</div>`;
   }
 
   function renderCategory(){
@@ -446,6 +920,7 @@
     renderCategoryGrid();
   }
 
+  /* ---------- 아카이브 ---------- */
   const eventsByDate = {};
   CLASSIFIED_EVENTS.forEach(ev => { (eventsByDate[ev.date] = eventsByDate[ev.date] || []).push(ev); });
 
@@ -482,12 +957,11 @@
       const dateStr = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
       const items = eventsByDate[dateStr];
       const isSelected = dateStr === selectedDate;
-      const cls = `cal-day body-md${items?' has-events':''}${isSelected?' selected':''}`;
-      html += items
-        ? `<button type="button" class="${cls}" data-date="${dateStr}" aria-pressed="${isSelected}">
-            ${day}<span class="cnt">${items.length}</span>
-          </button>`
-        : `<div class="${cls}">${day}</div>`;
+      const countLabel = items ? `${String(items.length).padStart(2,'0')}건` : '';
+      const aria = items ? `${viewMonth+1}월 ${day}일, 소식 ${items.length}건` : `${viewMonth+1}월 ${day}일, 소식 없음`;
+      html += `<div class="cal-day body-md${items?' has-events':''}${isSelected?' selected':''}" data-date="${dateStr}" title="${aria}">
+        ${day}${items ? `<span class="cnt">${countLabel}</span>` : ''}
+      </div>`;
     }
     grid.innerHTML = html;
 
@@ -504,33 +978,43 @@
     if (!selectedDate){
       document.getElementById('tl-date-label').textContent = '';
       document.getElementById('tl-count').textContent = '';
-      document.getElementById('tl-list').innerHTML = `<div class="tl-more body-md">아직 분류된 이벤트가 없습니다.</div>`;
+      document.getElementById('tl-list').innerHTML = `<div class="tl-more body-md">아직 분류된 소식이 없습니다. 수집은 됐지만 분류가 끝나지 않았을 수 있습니다.</div>`;
+      document.getElementById('tl-sub').textContent = '';
       return;
     }
     const items = (eventsByDate[selectedDate] || []).slice().sort((a,b) => a.time.localeCompare(b.time));
     document.getElementById('tl-date-label').textContent = fmtDateLabel(selectedDate);
     document.getElementById('tl-count').textContent = items.length ? `${items.length}건` : '';
 
+    const sub = document.getElementById('tl-sub');
+    if (items.length){
+      const tierCount = items.reduce((acc, ev) => { acc[ev.action_tier] = (acc[ev.action_tier]||0)+1; return acc; }, {});
+      const parts = TIER_ORDER_VIEW
+        .filter(t => tierCount[t])
+        .map(t => `${TIER_LABEL[t]} ${tierCount[t]}건`);
+      sub.textContent = `이날 분류된 소식 ${items.length}건 — ${parts.join(' · ')}. 시간은 마지막으로 보도된 시각입니다.`;
+    } else {
+      sub.textContent = '';
+    }
+
     if (!items.length){
-      document.getElementById('tl-list').innerHTML = `<div class="tl-more body-md">이 날짜에는 분류된 이벤트가 없습니다.</div>`;
+      document.getElementById('tl-list').innerHTML = `<div class="tl-more body-md">이 날짜에는 분류된 소식이 없습니다.</div>`;
       return;
     }
 
-    document.getElementById('tl-list').innerHTML = items.map(ev => {
-      const multi = ev.sources.length > 1;
-      return `<div class="tl-item">
-        <span class="tl-time mono-caption">${ev.time}</span>
+    document.getElementById('tl-list').innerHTML = items.map(ev => `
+      <div class="tl-item">
+        <span class="tl-time mono-caption">${esc(ev.time)}</span>
         <div class="tl-card">
-          ${chipHTML(ev)}
-          <h4><a href="${primaryUrl(ev)}" target="_blank" rel="noopener">${ev.title}</a></h4>
-          <p class="body-md">${ev.summary}</p>
+          <div class="row-top">${chipHTML(ev)}${platformBadgesHTML(ev)}</div>
+          <h4><a href="${esc(primaryUrl(ev))}" target="_blank" rel="noopener">${esc(ev.title)}</a></h4>
+          <p class="body-md">${esc(ev.summary)}</p>
           <div class="row-meta">
             <div class="sources">${sourcePillsHTML(ev)}</div>
-            <span class="badge ${multi ? 'badge-mint mono-caption' : 'mono-caption'}">${countLabel(ev)}</span>
+            <span class="badge mono-caption">${countLabel(ev)}</span>
           </div>
         </div>
-      </div>`;
-    }).join('');
+      </div>`).join('');
   }
 
   document.getElementById('cal-prev').addEventListener('click', () => {
@@ -542,29 +1026,31 @@
     renderCalendar();
   });
 
-  renderHeaderAndStats();
+  /* ---------- 탭 ---------- */
+  const tabButtons = document.querySelectorAll('.tabbar button');
+  const views = {
+    today: document.getElementById('today-view'),
+    calendar: document.getElementById('calendar-view'),
+    feed: document.getElementById('feed-view'),
+    category: document.getElementById('category-view'),
+  };
+  function selectTab(target){
+    tabButtons.forEach(b => {
+      const on = b.dataset.target === target;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    Object.entries(views).forEach(([key, el]) => el.classList.toggle('active', key === target));
+  }
+  tabButtons.forEach(btn => btn.addEventListener('click', () => selectTab(btn.dataset.target)));
+
+  /* ---------- 초기 렌더 ---------- */
+  renderTopbar();
+  renderToday();
   renderFeed();
   renderCategory();
   renderCalendar();
   renderTimeline();
-
-  document.querySelectorAll('#range-filter button').forEach(b =>
-    b.addEventListener('click', () => setRange(Number(b.dataset.days))));
-  document.getElementById('feed-q').addEventListener('input', e => {
-    feedQuery = e.target.value.trim().toLowerCase();
-    renderFeed();
-  });
-
-  const tabButtons = document.querySelectorAll('.tabbar button');
-  const views = { feed: document.getElementById('feed-view'), category: document.getElementById('category-view'), timeline: document.getElementById('timeline-view') };
-  tabButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      tabButtons.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
-      btn.classList.add('active'); btn.setAttribute('aria-selected','true');
-      Object.values(views).forEach(v => v.classList.remove('active'));
-      views[btn.dataset.target].classList.add('active');
-    });
-  });
 </script>
 </body>
 </html>
