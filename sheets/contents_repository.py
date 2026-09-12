@@ -63,7 +63,12 @@ def get_unclustered_contents(clustered_content_ids: set) -> list:
 
 
 def get_unclassified_contents(classified_content_ids: set) -> list:
-    """아직 content_topics에 배정되지 않은 콘텐츠를 분류 입력으로 반환한다."""
+    """아직 분류/태깅되지 않은 콘텐츠를 분류 입력으로 반환한다.
+
+    제외할 content_id 집합을 호출자가 넘기므로 topic 분류(content_topics)와
+    platform 태깅(content_platforms) 양쪽에서 같이 쓴다. 두 경우 모두 판단에
+    필요한 입력은 제목과 요약뿐이다.
+    """
     worksheet = get_worksheet(settings.SHEET_CONTENTS)
     records = worksheet.get_all_records()
     return [

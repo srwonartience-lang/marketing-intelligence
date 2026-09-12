@@ -14,3 +14,8 @@ def get_active_categories() -> list:
 def get_active_topics() -> list:
     worksheet = get_worksheet(settings.SHEET_TOPICS)
     return [r for r in worksheet.get_all_records() if _is_active(r)]
+
+
+def get_active_platforms() -> list:
+    worksheet = get_worksheet(settings.SHEET_PLATFORMS)
+    return [r for r in worksheet.get_all_records() if _is_active(r)]
