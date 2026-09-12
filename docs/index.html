@@ -16,7 +16,7 @@
     --hairline:#ebebeb;
     --hairline-on-dark:#26263a;
     --surface-dark-soft:#313641;
-    --body:#8f8f8f;
+    --body:#6b6b6b;
     --on-dark:#ffffff;
     --on-dark-soft:#a6a6c2;
     --orange:#fc4c02;
@@ -103,6 +103,7 @@
   .cat-pill{ appearance:none; cursor:pointer; border:1px solid var(--hairline); background:var(--canvas); color:var(--ink); border-radius:var(--r-sm); padding:7px 14px; display:inline-flex; align-items:center; gap:7px; }
   .cat-pill .dot{ width:7px; height:7px; border-radius:50%; background:currentColor; }
   .cat-pill:hover{ border-color:var(--ink); }
+  .cat-pill:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
   .cat-pill.geo{ color:var(--cat-geo); }
   .cat-pill.ai{ color:var(--cat-ai); }
   .cat-pill.industry{ color:var(--cat-industry); }
@@ -129,6 +130,11 @@
   a.mini-card{ cursor:pointer; transition:border-color 0.12s ease; }
   a.mini-card:hover{ border-color:var(--ink); }
 
+  .feed-controls{ max-width:740px; }
+  #feed-q{ width:100%; font-family:inherit; font-size:15px; line-height:20px; color:var(--ink); background:var(--canvas);
+    padding:10px 14px; border:1px solid var(--hairline); border-radius:var(--r-sm); margin-bottom:12px; }
+  #feed-q::placeholder{ color:var(--body); }
+  #feed-q:focus{ outline:2px solid var(--ink); outline-offset:1px; border-color:var(--ink); }
   #feed-view .list{ display:flex; flex-direction:column; gap:12px; max-width:740px; }
   .article-card{ background:var(--canvas); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:24px; }
   .article-card .row-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
@@ -154,10 +160,12 @@
   .cal-nav button:not(:disabled):hover{ border-color:var(--ink); }
   .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
   .cal-dow{ text-align:center; color:var(--body); padding-bottom:6px; }
-  .cal-day{ position:relative; aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:var(--r-xs); cursor:pointer; border:1px solid transparent; font-variant-numeric:tabular-nums; }
+  .cal-day{ position:relative; aspect-ratio:1; display:flex; align-items:center; justify-content:center; padding-bottom:9px; border-radius:var(--r-xs); cursor:pointer; border:1px solid transparent; font-variant-numeric:tabular-nums; }
+  button.cal-day{ appearance:none; background:none; font-family:inherit; font-size:inherit; line-height:inherit; letter-spacing:inherit; color:inherit; width:100%; }
+  button.cal-day:focus-visible{ outline:2px solid var(--ink); outline-offset:1px; }
   .cal-day.empty{ cursor:default; }
   .cal-day.has-events:hover{ border-color:var(--hairline); }
-  .cal-day .cnt{ position:absolute; bottom:2px; font-family:"JetBrains Mono",monospace; font-size:8px; color:var(--body); }
+  .cal-day .cnt{ position:absolute; bottom:2px; font-family:"JetBrains Mono",monospace; font-size:10px; color:var(--body); }
   .cal-day.selected{ background:var(--ink); color:var(--on-primary); }
   .cal-day.selected .cnt{ color:var(--on-dark-soft); }
   .cal-legend{ display:flex; align-items:center; gap:8px; margin-top:14px; padding-top:14px; border-top:1px solid var(--hairline); }
@@ -221,6 +229,15 @@
   <div class="content">
 
     <div id="feed-view" class="view active">
+      <div class="feed-controls">
+        <input id="feed-q" type="search" placeholder="제목 · 요약 · 매체 검색" aria-label="피드 검색" autocomplete="off">
+        <div class="cat-filter" id="range-filter">
+          <button class="cat-pill mono-btn all active" data-days="7">최근 7일</button>
+          <button class="cat-pill mono-btn all" data-days="30">최근 30일</button>
+          <button class="cat-pill mono-btn all" data-days="0">전체 기간</button>
+        </div>
+      </div>
+      <p class="cat-count-label caption" id="feed-count"></p>
       <div class="list" id="feed-list"></div>
     </div>
 
@@ -279,7 +296,8 @@
   function fmtDateLabel(d){
     const dt = new Date(d + 'T00:00:00');
     const days = ['일','월','화','수','목','금','토'];
-    return `${dt.getMonth()+1}월 ${dt.getDate()}일 (${days[dt.getDay()]})`;
+    const year = dt.getFullYear() !== new Date().getFullYear() ? `${dt.getFullYear()}년 ` : '';
+    return `${year}${dt.getMonth()+1}월 ${dt.getDate()}일 (${days[dt.getDay()]})`;
   }
   function primaryUrl(ev){ return ev.sources[0] ? ev.sources[0].url : '#'; }
   function sourcePillsHTML(ev){
@@ -329,9 +347,49 @@
     document.getElementById('generated-at').textContent = GENERATED_AT;
   }
 
+  const LATEST_DATE = CLASSIFIED_EVENTS.reduce((m,e) => e.date > m ? e.date : m, '');
+  let rangeDays = 7;
+  let feedQuery = '';
+
+  function cutoffDate(days){
+    if (!days || !LATEST_DATE) return '';
+    const base = new Date(LATEST_DATE + 'T00:00:00');
+    base.setDate(base.getDate() - (days - 1));
+    return `${base.getFullYear()}-${String(base.getMonth()+1).padStart(2,'0')}-${String(base.getDate()).padStart(2,'0')}`;
+  }
+  function matchesQuery(ev){
+    if (!feedQuery) return true;
+    return (ev.title + ' ' + ev.summary + ' ' + ev.sources.map(s => s.name).join(' '))
+      .toLowerCase().includes(feedQuery);
+  }
+
   function renderFeed(){
-    const sorted = [...CLASSIFIED_EVENTS].sort((a,b) => (b.date+b.time).localeCompare(a.date+a.time));
-    document.getElementById('feed-list').innerHTML = sorted.map(ev => articleCardHTML(ev,false)).join('');
+    const cutoff = cutoffDate(rangeDays);
+    const matched = CLASSIFIED_EVENTS.filter(matchesQuery);
+    const items = matched.filter(ev => !cutoff || ev.date >= cutoff)
+      .sort((a,b) => (b.date+b.time).localeCompare(a.date+a.time));
+    const rangeLabel = rangeDays ? `최근 ${rangeDays}일` : '전체 기간';
+
+    document.getElementById('feed-count').textContent =
+      `${rangeLabel}${feedQuery ? ` · “${feedQuery}” 검색` : ''} · ${items.length}건`;
+
+    if (items.length){
+      document.getElementById('feed-list').innerHTML = items.map(ev => articleCardHTML(ev,false)).join('');
+      return;
+    }
+    const outside = matched.length - items.length;
+    document.getElementById('feed-list').innerHTML =
+      `<p class="body-md">${rangeLabel}에는 해당하는 이벤트가 없습니다.</p>` +
+      (outside ? `<button class="cat-pill mono-btn all" id="feed-widen">전체 기간에서 ${outside}건 보기</button>` : '');
+    const widen = document.getElementById('feed-widen');
+    if (widen) widen.addEventListener('click', () => setRange(0));
+  }
+
+  function setRange(days){
+    rangeDays = days;
+    document.querySelectorAll('#range-filter button').forEach(b =>
+      b.classList.toggle('active', Number(b.dataset.days) === days));
+    renderFeed();
   }
 
   let activeCategory = 'all';
@@ -410,9 +468,12 @@
       const dateStr = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
       const items = eventsByDate[dateStr];
       const isSelected = dateStr === selectedDate;
-      html += `<div class="cal-day body-md${items?' has-events':''}${isSelected?' selected':''}" data-date="${dateStr}">
-        ${day}${items ? `<span class="cnt">${items.length}</span>` : ''}
-      </div>`;
+      const cls = `cal-day body-md${items?' has-events':''}${isSelected?' selected':''}`;
+      html += items
+        ? `<button type="button" class="${cls}" data-date="${dateStr}" aria-pressed="${isSelected}">
+            ${day}<span class="cnt">${items.length}</span>
+          </button>`
+        : `<div class="${cls}">${day}</div>`;
     }
     grid.innerHTML = html;
 
@@ -472,6 +533,13 @@
   renderCategory();
   renderCalendar();
   renderTimeline();
+
+  document.querySelectorAll('#range-filter button').forEach(b =>
+    b.addEventListener('click', () => setRange(Number(b.dataset.days))));
+  document.getElementById('feed-q').addEventListener('input', e => {
+    feedQuery = e.target.value.trim().toLowerCase();
+    renderFeed();
+  });
 
   const tabButtons = document.querySelectorAll('.tabbar button');
   const views = { feed: document.getElementById('feed-view'), category: document.getElementById('category-view'), timeline: document.getElementById('timeline-view') };
