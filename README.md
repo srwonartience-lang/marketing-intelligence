@@ -12,7 +12,7 @@ Marketing Intelligence/
 ├── .env                    # 환경변수 (직접 작성, git에 커밋하지 않음)
 ├── .env.example            # 환경변수 템플릿
 ├── requirements.txt
-├── main.py                       # RSS 수집 엔트리포인트 (병렬 수집 오케스트레이션)
+├── main.py                       # 수집 엔트리포인트 (RSS + 사이트 크롤러, 병렬 수집 오케스트레이션)
 ├── cluster_events.py             # Event Clustering 엔트리포인트
 ├── classify_content.py           # 룰(키워드) 기반 분류 엔트리포인트
 ├── classify_content_llm.py       # Gemini 기반 분류 엔트리포인트
@@ -30,7 +30,10 @@ Marketing Intelligence/
 │   └── settings.py         # 환경변수 로드 및 상수
 ├── collectors/
 │   ├── base_collector.py   # 수집기 공통 인터페이스
-│   └── rss_collector.py    # RSS 수집 로직 (UA 지정, 재시도 포함)
+│   ├── http_client.py      # 공통 HTTP fetch (UA 지정, 재시도)
+│   ├── rss_collector.py    # RSS 수집 로직
+│   ├── web_collector.py    # RSS가 없는 사이트 수집 (robots.txt 확인, 요청 간격, 사이트별 파서 호출)
+│   └── site_parsers/       # 사이트별 파서 (tiktok_ads.py, shopee_ads.py). 새 사이트는 여기에 등록
 ├── sheets/
 │   ├── client.py                    # Google Sheets 인증/연결 (다른 스프레드시트도 열 수 있음)
 │   ├── sources_repository.py        # sources 시트 read
@@ -99,7 +102,10 @@ LOG_LEVEL=INFO
 | S001 | Google Search Central | Global | Official | Search | https://developers.google.com/search/blog | https://developers.google.com/search/blog/feed.xml | RSS | 1 | TRUE |
 
 - `active=TRUE`이며 `crawl_type=RSS`인 행만 RSS 수집기의 대상이 됩니다.
-- `crawl_type=CRAWL`인 소스는 RSS가 없는 소스로, 향후 별도의 크롤러가 처리합니다.
+- `crawl_type=CRAWL`인 소스는 RSS가 없는 소스입니다. `collectors/site_parsers`에 그 사이트의 파서가 등록돼 있을 때만 수집되고, 파서가 없는 CRAWL 소스는 실행 로그에 "skipped"로 한 번 남기고 건너뜁니다.
+- 현재 파서가 있는 사이트: TikTok for Business 블로그(`ads.tiktok.com/business/...`), Shopee Ads 뉴스(`ads.shopee.<국가>/news`).
+- 크롤러는 요청마다 해당 호스트의 `robots.txt`를 확인하고(읽지 못하면 수집하지 않음), 같은 실행 안에서 요청 사이에 1초 간격을 둡니다.
+- Shopee Ads는 국가별 사이트의 갱신 상태가 다릅니다. 싱가포르·말레이시아 뉴스는 2021년에서 멈춰 있어 필리핀(`ads.shopee.ph/news`)을 등록했습니다. 다른 국가를 추가할 때는 코드 변경 없이 시트에 행만 추가하되, 먼저 최신 글이 있는지 확인하세요.
 - RSS URL은 코드에 하드코딩하지 않고 `rss_url` 컬럼에서 읽어옵니다.
 
 ## 실행
@@ -231,7 +237,7 @@ python generate_dashboard.py
 
 `.github/workflows/collect.yml`이 매일 **KST 05:17(UTC 20:17)** 에 다음 순서로 자동 실행합니다:
 
-1. `main.py` — RSS 수집
+1. `main.py` — RSS·사이트 크롤러 수집
 2. `cluster_events.py` — Event Clustering
 3. `classify_content.py` — 룰 기반 주제 분류
 4. `classify_platforms.py` — 룰 기반 플랫폼 태깅
@@ -302,7 +308,9 @@ LLM(Gemini) 기반 분류(`classify_content_llm.py`)는 자동화에 포함하�
 
 ## 알려진 제약 사항
 
-- 일부 소스(예: Cloudflare 봇 챌린지가 걸린 사이트)는 RSS를 프로그래밍적으로 가져올 수 없습니다. 이런 소스는 `rss_url`을 비워두면 자동으로 스킵되며, 향후 `crawl_type=CRAWL` 방식의 별도 크롤러로 전환이 필요합니다.
+- 일부 소스(예: Cloudflare 봇 챌린지가 걸린 사이트)는 RSS를 프로그래밍적으로 가져올 수 없습니다. 이런 소스는 `rss_url`을 비워두면 자동으로 스킵되며, `crawl_type=CRAWL`로 바꾸고 사이트별 파서를 등록해야 수집됩니다.
+- **`facebook.com`은 크롤링하지 않습니다.** `facebook.com/robots.txt`의 `User-agent: *` 규칙이 전면 금지(`Disallow: /`)이고, Meta는 서면 허가 없는 자동 수집을 명시적으로 금지합니다. Meta 소식은 공식 RSS인 Meta Newsroom(`about.fb.com/news/feed/`)과 Meta for Developers 블로그(`developers.facebook.com/blog/feed/`)로 수집합니다. 다만 광고 제품 공지가 모이는 `facebook.com/business/news`(sources의 S004)는 이 방식으로 대체되지 않습니다.
+- Shopee Ads 파서는 페이지에 인라인된 초기 상태 JSON(`window.__INITIAL_STATE__`)을 읽습니다. 사이트가 이 구조를 바꾸면 파서가 오류를 내며 해당 소스만 실패합니다(다른 소스는 계속 수집). 이때 0건으로 조용히 넘어가지 않도록 일부러 예외를 발생시킵니다.
 - **이 서비스는 실시간이 아닙니다.** RSS 수집이 하루 1회(KST 05:17 예약)만 돌기 때문에, 화면이 약속할 수 있는 것은 "매일 아침 갱신 · 최근 24시간"까지입니다. 실시간에 가깝게 하려면 공식 소스(Google/Meta 공식 블로그 등)만 3~6시간 간격 cron을 추가로 돌리는 편이 정확합니다. 있지도 않은 실시간성을 문구로 약속하면, 사용자가 이 화면을 믿고 확인을 끝내는 순간 제품이 거짓말을 하게 됩니다.
 - 조치 등급은 키워드 룰이므로 완벽하지 않습니다. 새로운 표현이 등장하면 `processing/action_tier.py`의 신호 목록을 보강해야 합니다. 실제로 "DV360 changes remove targeting exclusions and add new business identity requirements" 같은 표현이 초기 룰에서 누락되어 보강했습니다.
 - Google Sheets 파일을 브라우저에서 열어놓은 상태로 스크립트를 실행하면, 실시간 편집(우발적인 셀 입력, 되돌리기 등)이 API가 쓴 데이터와 충돌할 수 있습니다. 수집 스크립트를 실행할 때는 시트 탭을 닫아두는 것을 권장합니다.

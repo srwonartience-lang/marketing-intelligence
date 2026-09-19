@@ -1,7 +1,9 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Optional
 
+from collectors.base_collector import BaseCollector
 from collectors.rss_collector import RSSCollector
+from collectors.web_collector import WebCollector
 from models.content import Content
 from processing.cleaner import (
     clean_author,
@@ -14,7 +16,7 @@ from processing.cleaner import (
 )
 from processing.deduplicator import Deduplicator, compute_content_hash
 from sheets.contents_repository import append_contents, get_existing_state
-from sheets.sources_repository import get_active_rss_sources
+from sheets.sources_repository import get_active_crawl_sources, get_active_rss_sources
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -54,7 +56,7 @@ def build_content(raw_item: dict, source: dict, dedup: Deduplicator) -> Optional
     )
 
 
-def _fetch_source(source: dict, collector: RSSCollector) -> tuple:
+def _fetch_source(source: dict, collector: BaseCollector) -> tuple:
     """네트워크 요청(수집)만 담당하는 워커. 스레드에서 병렬 실행되므로
     공유 상태(Deduplicator 등)는 건드리지 않고 결과만 반환한다."""
     try:
@@ -64,15 +66,30 @@ def _fetch_source(source: dict, collector: RSSCollector) -> tuple:
         return source, [], e
 
 
-def run_rss_collection(max_workers: int = 5) -> None:
-    sources = get_active_rss_sources()
+def _plan_fetch_jobs(rss_collector: RSSCollector, web_collector: WebCollector) -> list[tuple]:
+    """(source, 수집기) 쌍을 만든다. CRAWL 소스 중 전용 파서가 없는 것은 수집하지 않고 건너뛴다."""
+    jobs = [(source, rss_collector) for source in get_active_rss_sources()]
+
+    unsupported = []
+    for source in get_active_crawl_sources():
+        if web_collector.supports(source):
+            jobs.append((source, web_collector))
+        else:
+            unsupported.append(source["source_id"])
+    if unsupported:
+        logger.info(f"CRAWL sources without a registered crawler, skipped: {unsupported}")
+
+    return jobs
+
+
+def run_collection(max_workers: int = 5) -> None:
     existing_urls, existing_hashes, last_published_by_source = get_existing_state()
     dedup = Deduplicator(existing_urls, existing_hashes)
-    collector = RSSCollector()
+    jobs = _plan_fetch_jobs(RSSCollector(), WebCollector(known_urls=frozenset(existing_urls)))
 
     fetch_results = []
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = [executor.submit(_fetch_source, source, collector) for source in sources]
+        futures = [executor.submit(_fetch_source, source, collector) for source, collector in jobs]
         for future in as_completed(futures):
             fetch_results.append(future.result())
 
@@ -88,9 +105,11 @@ def run_rss_collection(max_workers: int = 5) -> None:
 
         watermark = last_published_by_source.get(source["source_id"])
         if watermark:
+            # 게시일만 있고 시각이 없는 소스는 같은 날 올라온 새 글이 watermark와 같은 값이 된다.
+            # 이미 저장된 글은 아래 build_content의 url/hash 중복 검사가 걸러내므로 >=로 안전하다.
             raw_items = [
                 item for item in raw_items
-                if not item["published_at"] or item["published_at"] > watermark
+                if not item["published_at"] or item["published_at"] >= watermark
             ]
         else:
             raw_items = raw_items[:FIRST_RUN_ITEM_LIMIT]
@@ -118,4 +137,4 @@ def run_rss_collection(max_workers: int = 5) -> None:
 
 
 if __name__ == "__main__":
-    run_rss_collection()
+    run_collection()

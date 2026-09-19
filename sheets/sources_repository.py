@@ -13,6 +13,10 @@ def _is_rss_type(record: dict) -> bool:
     return str(record.get("crawl_type", "")).strip().upper() == "RSS"
 
 
+def _is_crawl_type(record: dict) -> bool:
+    return str(record.get("crawl_type", "")).strip().upper() == "CRAWL"
+
+
 def get_active_rss_sources() -> list[dict]:
     """sources 시트에서 active=TRUE이며 crawl_type=RSS인 소스만 반환한다.
 
@@ -29,4 +33,18 @@ def get_active_rss_sources() -> list[dict]:
         logger.warning(f"RSS type sources missing rss_url, will fail to collect: {missing_rss_url}")
 
     logger.info(f"Active RSS sources: {len(sources)} / total rows: {len(records)}")
+    return sources
+
+
+def get_active_crawl_sources() -> list[dict]:
+    """sources 시트에서 active=TRUE이며 crawl_type=CRAWL인 소스를 반환한다.
+
+    이 소스 중 어떤 것을 실제로 수집할 수 있는지는 시트가 아니라 코드(사이트별 파서 등록 여부)가
+    정하므로, 파서가 없는 소스를 걸러내는 일은 호출부가 한다.
+    """
+    worksheet = get_worksheet(settings.SHEET_SOURCES)
+    records = worksheet.get_all_records()
+
+    sources = [r for r in records if _is_active(r) and _is_crawl_type(r)]
+    logger.info(f"Active CRAWL sources: {len(sources)} / total rows: {len(records)}")
     return sources
