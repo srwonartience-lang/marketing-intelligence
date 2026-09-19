@@ -99,7 +99,9 @@ def run_generate() -> None:
         tier_counts[event["action_tier"]] = tier_counts.get(event["action_tier"], 0) + 1
     logger.info(f"Action tier distribution: {tier_counts}")
 
-    generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    # 화면이 이 값으로 "지금 보는 게 오늘 만든 것인가"를 판정하므로, 표시용 문자열이
+    # 아니라 브라우저가 정확히 해석할 수 있는 ISO 8601로 넘긴다.
+    generated_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     html = render_dashboard(events, platforms, generated_at)
 
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)

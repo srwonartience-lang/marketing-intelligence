@@ -322,7 +322,10 @@
   @media (max-width:760px){
     .cal-layout{ grid-template-columns:1fr; }
     .topbar-inner{ padding:0 18px; gap:10px; }
-    .topbar .fresh{ display:none; }
+    /* 좁은 화면에서는 평소 갱신 시각을 숨기지만, 경고일 때는 날짜를 빼고라도 보인다.
+       휴대폰으로 열었을 때 어제 데이터라는 사실이 가려지면 이 표시는 쓸모가 없다. */
+    .topbar .fresh:not(.stale){ display:none; }
+    .topbar.stale .today{ display:none; }
     .content, .tabbar{ padding-left:18px; padding-right:18px; }
     /* 탭 이름이 길어 좁은 화면에서 줄바꿈으로 깨지지 않도록, 줄이는 대신 가로 스크롤한다. */
     .tabbar{ margin-left:18px; margin-right:18px; overflow-x:auto; max-width:calc(100% - 36px); justify-content:flex-start; }
@@ -434,7 +437,7 @@
 </div>
 
 <footer class="site-footer">
-  <p class="caption">RSS 수집은 매일 1회(KST 06:00) 실행됩니다. 이 화면은 <strong>실시간이 아니며</strong>, 마지막 수집 이후의 변경은 다음 실행에 반영됩니다.</p>
+  <p class="caption">RSS 수집은 매일 새벽 1회 실행됩니다. 이 화면은 <strong>실시간이 아니며</strong>, 마지막 수집 이후의 변경은 다음 실행에 반영됩니다.</p>
   <p class="caption">조치 등급은 소스 등급(공식/매체)과 본문 키워드로 자동 판정한 값입니다. 중요한 변경은 원문 공지로 확인하세요.</p>
   <p class="caption">Marketing Intelligence · <span id="generated-at"></span> 생성</p>
 </footer>
@@ -454,6 +457,7 @@
   // 헤드)을 넘겨 "스크롤 없이 끝난다"는 약속이 깨진다. 2장까지만 펼치고 나머지는
   // 한 줄 목록으로 내린다.
   const ACTION_CARD_LIMIT = 2;
+  const STALE_AFTER_HOURS = 20;
   const TIER_ORDER_VIEW = ['action', 'heads_up', 'context'];
   // 등급 이름만으로는 기준이 드러나지 않아, 선택한 등급 하나만 한 줄로 설명한다.
   const TIER_NOTE = {
@@ -585,21 +589,32 @@
     document.getElementById('top-today').textContent =
       `${now.getFullYear()}-${p(now.getMonth()+1)}-${p(now.getDate())} (${days[now.getDay()]})`;
 
+    /* 신선도는 "가장 최근 기사가 언제 나왔나"가 아니라 "이 화면이 언제 만들어졌나"로
+       잰다. 기사 시각으로 재면 파이프라인이 멈춰도 어제 기사가 최근이면 정상처럼
+       보인다 — 2026-09-19 대시보드 생성이 실패한 날, 화면은 어제 데이터인데도 경고가
+       뜨지 않았다.
+
+       기준은 20시간이다. 정상인 날 오전 9시에 보는 화면은 그날 새벽에 만든 것이라
+       길어야 4시간 전이고, 실행이 실패한 날은 전날 것이라 24시간을 넘는다. 새벽에
+       열어 아직 그날 실행 전이어도 경고가 뜨는데, 그때도 "지금 보는 건 오늘 것이
+       아니다"라는 사실 그대로다. */
     const fresh = document.getElementById('top-fresh');
     const text = document.getElementById('top-fresh-text');
-    if (!latestFirstSeen){
-      text.textContent = '수집 데이터 없음';
+    const builtAt = toTime(GENERATED_AT);
+    if (!builtAt){
+      text.textContent = '생성 시각 없음';
       fresh.classList.add('stale');
+      document.querySelector('.topbar').classList.add('stale');
     } else {
-      const ageHours = (Date.now() - new Date(latestFirstSeen).getTime()) / 36e5;
-      text.textContent = `최근 수집 ${fmtStamp(latestFirstSeen)}`;
-      // 하루 1회 실행이므로 36시간을 넘으면 파이프라인이 멈춘 것으로 본다.
-      if (ageHours > 36){
+      const ageHours = (Date.now() - builtAt) / 36e5;
+      text.textContent = `갱신 ${fmtStamp(GENERATED_AT)}`;
+      if (ageHours > STALE_AFTER_HOURS){
         fresh.classList.add('stale');
+        document.querySelector('.topbar').classList.add('stale');
         text.textContent += ' · 갱신 지연';
       }
     }
-    document.getElementById('generated-at').textContent = GENERATED_AT;
+    document.getElementById('generated-at').textContent = builtAt ? fmtStamp(GENERATED_AT) : GENERATED_AT;
   }
 
   function renderVerdict(){
