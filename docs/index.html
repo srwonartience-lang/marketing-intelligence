@@ -277,7 +277,16 @@
   .cb-block{ border-top:1px solid var(--hairline); padding:18px 0 14px; }
   .cb-block:last-child{ border-bottom:1px solid var(--hairline); }
   .cb-head{ display:flex; align-items:baseline; gap:4px 12px; flex-wrap:wrap; }
-  .cb-name{ font-size:18px; font-weight:500; line-height:24px; letter-spacing:-0.2px; color:var(--ink); }
+  .cb-name{ font-size:18px; font-weight:500; line-height:24px; letter-spacing:-0.2px; color:var(--ink); display:inline-flex; align-items:center; gap:8px; }
+  /* 분야명은 분야 전환 칩과 같은 분야 색(점 + 글자)으로 구분한다. */
+  .cb-name .dot{ width:8px; height:8px; border-radius:50%; background:currentColor; flex:none; }
+  .cb-name.geo{ color:var(--cat-geo); }
+  .cb-name.ai{ color:var(--cat-ai); }
+  .cb-name.industry{ color:var(--cat-industry); }
+  .cb-name.perf{ color:var(--cat-perf); }
+  .cb-name.commerce{ color:var(--cat-commerce); }
+  .cb-name.brand{ color:var(--cat-brand); }
+  .cb-name.research{ color:var(--cat-research); }
   .cb-count{ color:var(--body); font-variant-numeric:tabular-nums; }
   .cb-count b{ font-weight:500; color:var(--ink); }
   .cb-def{ margin:2px 0 10px; color:var(--body); }
@@ -295,7 +304,6 @@
   .cb-link:hover{ text-decoration-color:var(--ink); }
   .cb-link:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
   .cb-block.folded{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-  .cb-block.folded .cb-name{ color:var(--body); }
   .cb-block.folded .cb-link{ margin-top:0; }
   /* 좁은 화면에서는 출처·날짜를 제목 옆이 아니라 아래로 내린다. 옆에 두면 제목이 한 단어씩 깨진다. */
   @media (max-width:680px){
@@ -1061,7 +1069,7 @@
       ? `<div class="cb-empty caption">최근 14일 동안 새 글이 없어 가장 최근 글을 보여줍니다.</div>` : '';
     return `<section class="cb-block">
       <div class="cb-head">
-        <span class="cb-name">${esc(catName(cat))}</span>
+        <span class="cb-name ${CATEGORY_KEY[cat] || 'industry'}"><span class="dot"></span>${esc(catName(cat))}</span>
         <span class="cb-count caption">${countLine(w)}</span>
       </div>
       <p class="cb-def caption">${esc(CATEGORY_NOTE[cat] || '')}</p>
@@ -1076,7 +1084,7 @@
     const allContext = w.recent.every(e => e.action_tier === 'context');
     return `<section class="cb-block folded">
       <div class="cb-head">
-        <span class="cb-name">${esc(catName(cat))}</span>
+        <span class="cb-name ${CATEGORY_KEY[cat] || 'industry'}"><span class="dot"></span>${esc(catName(cat))}</span>
         <span class="cb-count caption">최근 7일 ${w.recent.length}건${w.recent.length && allContext ? ' · 전부 참고 등급' : ''}</span>
       </div>
       <button class="cb-link" data-unfold>펼치기</button>
