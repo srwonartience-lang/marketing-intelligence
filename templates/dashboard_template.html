@@ -139,7 +139,8 @@
 
   /* ---------- 섹션 ---------- */
   .sec{ margin-bottom:22px; }
-  .sec-head{ display:flex; align-items:baseline; gap:10px; margin-bottom:10px; }
+  .sec-head{ display:flex; align-items:baseline; gap:4px 10px; flex-wrap:wrap; margin-bottom:10px; }
+  .sec-head .sec-desc{ color:var(--body); }
   .sec-head .sec-label{ color:var(--ink); }
   .sec-head .sec-n{ color:var(--body); }
   .sec-head.action .sec-label{ color:var(--action); }
@@ -366,6 +367,7 @@
         <div class="sec-head action">
           <span class="sec-label disp-md">조치 필요</span>
           <span class="sec-n mono-caption" id="action-n"></span>
+          <span class="sec-desc caption" data-tier-note="action"></span>
         </div>
         <div class="list" id="action-list"></div>
       </div>
@@ -374,6 +376,7 @@
         <div class="sec-head">
           <span class="sec-label disp-md">알아둘 것</span>
           <span class="sec-n mono-caption" id="headsup-n"></span>
+          <span class="sec-desc caption" data-tier-note="heads_up"></span>
         </div>
         <div class="oneline" id="headsup-list"></div>
       </div>
@@ -462,10 +465,13 @@
   // 등급 이름만으로는 기준이 드러나지 않아, 선택한 등급 하나만 한 줄로 설명한다.
   const TIER_NOTE = {
     all: '분류가 끝난 소식 전체입니다.',
-    action: '기존 캠페인·계정 설정이 영향받는 변경입니다. 지원 종료, 기능 제거, 신규 광고주 요건 등.',
-    heads_up: '신규 기능·베타·출시입니다. 지금 손댈 필요는 없지만 다음 캠페인 설계에 영향을 줍니다.',
-    context: '업계 동향·리서치·사례입니다. 특정 채널에 조치할 것이 없는 소식입니다.',
+    action: '기존 캠페인·계정 설정을 바꿔야 하는 변경 (지원 종료, 기능 제거, 필수 요건 등)',
+    heads_up: '신규 기능·베타·출시 등 다음 캠페인 기획 때 검토할 소식',
+    context: '특정 플랫폼 조치와 무관한 업계 동향·리서치·주간 정리',
   };
+  document.querySelectorAll('[data-tier-note]').forEach(el => {
+    el.textContent = TIER_NOTE[el.dataset.tierNote];
+  });
 
   const CATEGORY_ORDER = ["SEO / GEO","AI Trends","Data & AI Research","Marketing Industry","Performance Marketing","Commerce & Retail","Brand Marketing"];
   const CATEGORY_KEY = {
@@ -628,17 +634,19 @@
       : myPlatforms).map(p => p.name);
     const scope = channelNames.length ? channelNames.join(' · ') : '선택한 채널';
 
+    const pending = actions.length + headsups.length;
+    const breakdown = [];
+    if (actions.length) breakdown.push(`조치 필요 ${actions.length}건`);
+    if (headsups.length) breakdown.push(`알아둘 것 ${headsups.length}건`);
+
     box.classList.remove('has-action','all-clear');
-    if (actions.length){
-      box.classList.add('has-action');
-      main.textContent = `조치가 필요한 변경 ${actions.length}건`;
-      sub.textContent = `${scope} · 알아둘 것 ${headsups.length}건`;
-    } else if (headsups.length){
-      main.textContent = '조치가 필요한 변경은 없습니다';
-      sub.textContent = `${scope} · 알아둘 것 ${headsups.length}건`;
+    if (pending){
+      if (actions.length) box.classList.add('has-action');
+      main.textContent = `오늘 확인해야 할 업데이트 사항이 ${pending}건 있습니다.`;
+      sub.textContent = `${scope} · ${breakdown.join(' · ')}`;
     } else {
       box.classList.add('all-clear');
-      main.textContent = '오늘 확인할 주요 변경사항이 없습니다.';
+      main.textContent = '오늘 확인할 업데이트 사항이 없습니다.';
       sub.textContent = `${scope} 모두 이상 없음`;
     }
 
@@ -739,7 +747,7 @@
     const offChannel = CLASSIFIED_EVENTS.filter(ev => isNew(ev) && !touchesMyChannels(ev)).length;
     const note = document.getElementById('context-note');
     const parts = [];
-    if (contextCount) parts.push(`참고 ${contextCount}건`);
+    if (contextCount) parts.push(`참고 ${contextCount}건(${TIER_NOTE.context})`);
     if (offChannel) parts.push(`내 채널 외 ${offChannel}건`);
     note.innerHTML = parts.length
       ? `${parts.join(' · ')} — <button class="btn-link" id="goto-feed">전체 피드에서 보기 →</button>`
