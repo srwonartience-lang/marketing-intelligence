@@ -7,6 +7,8 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from processing.day_summarizer import fingerprint, group_by_date
+from sheets.daily_summaries_repository import get_latest_summaries
 from sheets.dashboard_repository import get_classified_events_for_dashboard
 from sheets.taxonomy_repository import get_active_platforms
 from utils.logger import get_logger
@@ -81,11 +83,43 @@ def build_platform_view(platforms: list) -> list:
     ]
 
 
-def render_dashboard(events: list, platforms: list, generated_at: str) -> str:
+def build_day_summaries(events: list) -> dict:
+    """date -> AI 요약. 그날 소식 구성이 요약했을 때와 같은 날짜만 넣는다.
+
+    지문이 다르면 요약 뒤에 그날 소식이 늘거나 바뀐 것이라, 목록에 없는 내용을
+    요약하거나 새 소식을 빠뜨린 요약이 된다. 이 경우 보여주지 않는다 — 평소에는 같은
+    파이프라인의 앞 단계(summarize_days.py)가 이미 다시 요약해 두므로, 그 단계가
+    실패한 날에만 요약이 빠진다.
+
+    요약을 읽다 실패해도 대시보드는 요약 없이 만들어져야 한다. 대시보드가 하루 갱신되지
+    않는 것이 요약 하나 빠지는 것보다 훨씬 나쁘다.
+    """
+    try:
+        latest = get_latest_summaries()
+    except Exception as e:
+        logger.warning(f"Could not read daily summaries, rendering without them: {e}")
+        return {}
+
+    summaries = {}
+    for date, day_events in group_by_date(events).items():
+        row = latest.get(date)
+        if row and row.get("fingerprint") == fingerprint(day_events):
+            summaries[date] = row["summary"]
+    return summaries
+
+
+def _script_json(value) -> str:
+    """<script> 안에 넣을 JSON. 기사 요약이나 AI 요약에 '</script>'가 들어 있으면 그 자리에서
+    스크립트가 끝나 페이지 전체가 깨진다. '</'를 '<\\/'로 바꿔도 JSON 값은 같다."""
+    return json.dumps(value, ensure_ascii=False).replace("</", "<\\/")
+
+
+def render_dashboard(events: list, platforms: list, day_summaries: dict, generated_at: str) -> str:
     template = TEMPLATE_PATH.read_text(encoding="utf-8")
-    html = template.replace("__CLASSIFIED_EVENTS_JSON__", json.dumps(events, ensure_ascii=False))
-    html = html.replace("__PLATFORMS_JSON__", json.dumps(platforms, ensure_ascii=False))
-    html = html.replace("__GENERATED_AT_JSON__", json.dumps(generated_at, ensure_ascii=False))
+    html = template.replace("__CLASSIFIED_EVENTS_JSON__", _script_json(events))
+    html = html.replace("__PLATFORMS_JSON__", _script_json(platforms))
+    html = html.replace("__DAILY_SUMMARIES_JSON__", _script_json(day_summaries))
+    html = html.replace("__GENERATED_AT_JSON__", _script_json(generated_at))
     return html
 
 
@@ -102,7 +136,9 @@ def run_generate() -> None:
     # 화면이 이 값으로 "지금 보는 게 오늘 만든 것인가"를 판정하므로, 표시용 문자열이
     # 아니라 브라우저가 정확히 해석할 수 있는 ISO 8601로 넘긴다.
     generated_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    html = render_dashboard(events, platforms, generated_at)
+    day_summaries = build_day_summaries(events)
+    logger.info(f"Daily summaries embedded: {len(day_summaries)}")
+    html = render_dashboard(events, platforms, day_summaries, generated_at)
 
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_PATH.write_text(html, encoding="utf-8")

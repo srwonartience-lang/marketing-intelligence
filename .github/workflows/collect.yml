@@ -53,6 +53,17 @@ jobs:
           GOOGLE_SHEETS_ID: ${{ secrets.GOOGLE_SHEETS_ID }}
         run: python classify_platforms.py
 
+      - name: Summarize days with Gemini
+        # 요약이 실패해도 다음 단계(대시보드 생성)는 반드시 돌아야 한다. 요약 하나 빠지는
+        # 것보다 그날 화면이 통째로 갱신되지 않는 것이 훨씬 나쁘다. GEMINI_API_KEY가
+        # 없으면 스크립트가 알아서 건너뛰고 정상 종료한다.
+        continue-on-error: true
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
+          GOOGLE_SHEETS_ID: ${{ secrets.GOOGLE_SHEETS_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python summarize_days.py
+
       - name: Generate dashboard
         env:
           GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}

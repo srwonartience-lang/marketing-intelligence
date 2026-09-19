@@ -3,7 +3,7 @@
 국내외 마케팅 트렌드를 자동으로 수집·분석하는 Marketing Intelligence 서비스의 데이터 수집 파이프라인입니다.
 
 MVP 단계에서는 PostgreSQL/Supabase 대신 **Google Sheets**를 데이터베이스로 사용합니다.
-현재 구현 범위는 RSS 기반 콘텐츠 수집기(Data Collector), Event Clustering, 주제/카테고리 분류(룰 기반 + LLM), 그리고 그 결과를 보여주는 정적 대시보드(Signal Desk)입니다. AI Insight, Trend Score는 당분간 보류합니다.
+현재 구현 범위는 RSS 기반 콘텐츠 수집기와 RSS가 없는 사이트를 위한 사이트별 크롤러(Data Collector), Event Clustering, 주제/카테고리 분류(룰 기반 + LLM), 플랫폼 태깅과 조치 등급, 그리고 그 결과를 보여주는 정적 대시보드(Signal Desk)입니다. AI Insight, Trend Score는 당분간 보류합니다.
 
 ## 프로젝트 구조
 
@@ -219,7 +219,8 @@ python classify_platforms.py   # 룰 기반 플랫폼 태깅 → content_platfor
 
 - 날짜를 고르면 **그날 수집·분류된 소식 전체**를 시간순으로 봅니다. "오늘" 화면이 내 채널에 조치할 것만 추린다면, 여기서는 조치 등급이나 채널과 관계없이 그날 들어온 것이 모두 보입니다. 놓친 날을 되짚거나 특정 시점에 무슨 일이 있었는지 확인하는 용도입니다.
 - 달력의 각 날짜에는 `00건` 형식으로 **그날 분류가 끝난 소식의 건수**를 표시합니다. 숫자만 있으면 무엇을 세는 값인지 알 수 없어 단위를 붙였고, 두 자리로 자릿수를 맞춰 세로로 비교됩니다. 건수가 있는 날만 선택할 수 있습니다.
-- 선택한 날짜 아래에는 그날의 등급별 구성(예: "참고 3건")과 시간의 의미를 한 줄로 설명합니다. 표시되는 시각은 그 이벤트가 **마지막으로 보도된 시각**입니다. 첫 화면에서 강한 컬러는 "조치 필요" 하나뿐이고, 민트색은 "확인 완료 / 변경 없음" 성공 상태 전용입니다.
+- 선택한 날짜 아래에는 그날의 등급별 구성(예: "참고 3건")과 시간의 의미를 한 줄로 설명합니다. 표시되는 시각은 그 이벤트가 **마지막으로 보도된 시각**입니다.
+- 소식이 3건 이상인 날에는 목록 위에 **AI 요약**(2~3문장)이 붙습니다. 아래 "날짜별 AI 요약" 참고. 첫 화면에서 강한 컬러는 "조치 필요" 하나뿐이고, 민트색은 "확인 완료 / 변경 없음" 성공 상태 전용입니다.
 
 ```bash
 python generate_dashboard.py
@@ -233,6 +234,23 @@ python generate_dashboard.py
 3. Branch를 **main**, 폴더를 **/docs**로 선택 후 저장
 4. 잠시 후 `https://<사용자명>.github.io/<저장소명>/`에서 접속 가능
 
+## 날짜별 AI 요약
+
+업데이트 캘린더에서 10건이 넘는 날은 목록만으로 그날 무슨 일이 있었는지 잡기 어렵습니다. `summarize_days.py`가 Gemini로 그날 소식을 2~3문장으로 요약해 `daily_summaries` 시트에 쌓고, 대시보드가 이를 읽어 캘린더 목록 위에 보여줍니다. GitHub Pages는 정적 사이트라 브라우저에서 LLM을 부를 수 없어 파이프라인이 미리 만들어 둡니다.
+
+```bash
+venv/bin/python summarize_days.py               # 요약이 없거나 바뀐 날만 (최대 40일)
+venv/bin/python summarize_days.py --dry-run     # 시트에 쓰지 않고 결과만 출력
+```
+
+- **소식 3건 이상인 날만** 요약합니다. 실제 데이터에서 날짜 99일 중 중앙값이 하루 1건이라, 모든 날을 요약하면 대부분 제목을 되풀이하는 데 호출을 씁니다. 3건 이상인 날은 34일이고 전부 2026-07-16 이후입니다.
+- **바뀐 날만 다시 요약합니다.** 그날 이벤트 제목들로 지문을 만들어 함께 저장하고, 클러스터링이 기사를 늦게 붙여 지문이 달라진 날만 다시 부릅니다. 첫 실행은 밀린 34일, 이후에는 하루 1~3번입니다.
+- **요약과 목록이 어긋나면 보여주지 않습니다.** 대시보드는 지문이 지금 목록과 같은 요약만 넣습니다. 요약 단계가 실패한 날에는 요약이 빠질 뿐, 목록에 없는 내용을 말하는 요약이 뜨지 않습니다.
+- **요약이 실패해도 대시보드는 갱신됩니다.** 워크플로우에서 이 단계는 `continue-on-error`이고, `GEMINI_API_KEY`가 없으면 건너뛰고 정상 종료합니다. 대시보드도 시트가 없거나 읽기에 실패하면 요약 없이 만들어집니다.
+- `daily_summaries`는 추가만 하는 기록입니다. 같은 날짜를 다시 요약하면 새 행을 덧붙이고, 읽을 때 날짜별 가장 최근 행을 씁니다. 행 번호를 계산해 제자리에서 고치는 방식은 두 실행이 겹치면 서로 덮어쓴다는 게 `contents` 시트에서 확인됐기 때문입니다. 날짜와 지문이 시트에서 날짜 서식·숫자로 바뀌지 않도록 `RAW`로 씁니다.
+
+**프롬프트 규칙은 실제 실패에서 나왔습니다.** 처음에 "그날 흐름을 묶어서 쓰라"고 했더니, 2026-09-16의 무관한 세 기사(AI Overviews CTR 감소, Paid Search incrementality, Coach의 Spotify 캠페인)를 "이에 따라"로 이어 "CTR이 줄어서 채널을 다변화한다"는 없는 추세를 지어냈고, 원문의 "노출이 가장 큰 도메인이 23.1% 잃었다"를 "CTR 23.1% 감소"로 줄였습니다. 그래서 서로 다른 기사를 인과관계로 잇지 말 것, 수치의 조건을 빼지 말 것을 명시했습니다. 요약은 원문을 다시 확인하지 않고 믿는 자리라 지어낸 인과관계가 가장 해롭습니다. 화면에는 `AI 요약` 라벨을 붙여 사람이 쓴 글이 아님을 밝힙니다.
+
 ## 자동 실행 (GitHub Actions)
 
 `.github/workflows/collect.yml`이 매일 **KST 05:17(UTC 20:17)** 에 다음 순서로 자동 실행합니다:
@@ -241,8 +259,9 @@ python generate_dashboard.py
 2. `cluster_events.py` — Event Clustering
 3. `classify_content.py` — 룰 기반 주제 분류
 4. `classify_platforms.py` — 룰 기반 플랫폼 태깅
-5. `generate_dashboard.py` — 대시보드 생성
-6. `docs/index.html` 변경분을 커밋 후 push (GitHub Pages 자동 반영)
+5. `summarize_days.py` — 날짜별 AI 요약 (실패해도 다음 단계 진행)
+6. `generate_dashboard.py` — 대시보드 생성
+7. `docs/index.html` 변경분을 커밋 후 push (GitHub Pages 자동 반영)
 
 주 사용자가 출근해 화면을 보는 시각이 오전 9시라, 그 전에 갱신이 끝나 있어야 합니다. 처음 KST 09:00에서 06:00으로 당겼는데, 실제로는 **07:58~08:40에야 시작**했습니다. 실행 자체는 1~2분이고 나머지 2시간 남짓은 GitHub 예약 실행의 대기열 지연입니다 — 예약 실행은 정각에 몰려 크게 밀립니다. 9월 15일은 08:40에 끝나 여유가 20분뿐이었습니다. 그래서 붐비지 않는 17분으로 옮기고 한 시간 더 당겨(05:17), 같은 수준으로 밀려도 8시 전에 끝나게 했습니다.
 
@@ -258,6 +277,7 @@ LLM(Gemini) 기반 분류(`classify_content_llm.py`)는 자동화에 포함하�
 2. 저장소의 "Settings → Secrets and variables → Actions"에서 다음 두 개의 Repository secret을 등록합니다.
    - `GOOGLE_APPLICATION_CREDENTIALS_JSON`: 서비스 계정 JSON 키 파일의 **전체 내용**을 그대로 붙여넣습니다.
    - `GOOGLE_SHEETS_ID`: 대상 스프레드시트 ID.
+   - `GEMINI_API_KEY`: 날짜별 AI 요약용. 없으면 요약 단계만 건너뛰고 나머지는 정상 동작합니다.
 3. "Actions" 탭에서 "Daily Marketing Intelligence Pipeline" 워크플로우를 확인합니다. `workflow_dispatch`가 설정되어 있어 수동으로도 즉시 실행해볼 수 있습니다.
 4. 위 "GitHub Pages 최초 설정"도 함께 진행합니다.
 
@@ -274,6 +294,8 @@ LLM(Gemini) 기반 분류(`classify_content_llm.py`)는 자동화에 포함하�
 6. [x] 중복 확인 (URL + content_hash 기반, 실행 간 유지)
 7. [x] contents 시트 저장 (watermark 기반 증분 수집)
 8. [x] 에러 로그 처리 (소스별 실패 격리, 파일 로그 기록)
+9. [x] RSS가 없는 사이트(crawl_type=CRAWL) 사이트별 크롤러 — 파서 등록 방식, robots.txt 확인·요청 간격, 파서가 없는 소스는 건너뜀 (TikTok for Business, Shopee Ads)
+10. [x] 수집기 공통 HTTP fetch 분리 (`collectors/http_client.py`)
 
 ### Event Clustering
 1. [x] 미분류 콘텐츠 조회 (content_events 기준)

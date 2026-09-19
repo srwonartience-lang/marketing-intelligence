@@ -373,6 +373,10 @@
   .tl-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:6px; }
   .tl-head .count{ color:var(--body); }
   .tl-sub{ margin:0 0 16px; }
+  /* 날짜별 AI 요약. 목록 위에 두되 조용하게 — 강조색 없이 옅은 면으로만 구분한다. */
+  .day-summary{ background:var(--surface-soft); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:12px 14px; margin:4px 0 12px; }
+  .day-summary-tag{ color:var(--body); display:block; margin-bottom:4px; }
+  .day-summary p{ margin:0; max-width:70ch; }
 
   .tl{ position:relative; padding-left:26px; display:flex; flex-direction:column; gap:20px; }
   .tl::before{ content:""; position:absolute; left:5px; top:6px; bottom:6px; width:1px; background:var(--hairline); }
@@ -477,6 +481,10 @@
             <span class="disp-md" id="tl-date-label"></span>
             <span class="mono-caption count" id="tl-count"></span>
           </div>
+          <div class="day-summary" id="day-summary" hidden>
+            <span class="mono-eyebrow day-summary-tag">AI 요약</span>
+            <p class="body-md" id="day-summary-text"></p>
+          </div>
           <p class="caption tl-sub" id="tl-sub"></p>
           <div class="tl" id="tl-list"></div>
         </div>
@@ -513,6 +521,7 @@
 <script>
   const CLASSIFIED_EVENTS = __CLASSIFIED_EVENTS_JSON__;
   const PLATFORMS = __PLATFORMS_JSON__;
+  const DAILY_SUMMARIES = __DAILY_SUMMARIES_JSON__;  // date -> AI 요약. 소식 3건 이상인 날만 있다.
   const GENERATED_AT = __GENERATED_AT_JSON__;
 
   const LS_LAST_CHECKED = 'signaldesk.lastCheckedAt';
@@ -1224,7 +1233,16 @@
     });
   }
 
+  function renderDaySummary(date){
+    const box = document.getElementById('day-summary');
+    const summary = date ? DAILY_SUMMARIES[date] : '';
+    box.hidden = !summary;
+    // textContent로만 넣는다. LLM이 만든 문장을 HTML로 해석하지 않는다.
+    document.getElementById('day-summary-text').textContent = summary || '';
+  }
+
   function renderTimeline(){
+    renderDaySummary(selectedDate);
     if (!selectedDate){
       document.getElementById('tl-date-label').textContent = '';
       document.getElementById('tl-count').textContent = '';
