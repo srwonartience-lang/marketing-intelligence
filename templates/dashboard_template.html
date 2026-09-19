@@ -556,9 +556,27 @@
     const p = n => String(n).padStart(2,'0');
     return `${p(dt.getMonth()+1)}-${p(dt.getDate())} ${p(dt.getHours())}:${p(dt.getMinutes())}`;
   }
-  function lsGet(key){ try { return localStorage.getItem(key); } catch(e){ return null; } }
-  function lsSet(key, value){ try { localStorage.setItem(key, value); } catch(e){ /* 시크릿 창 등 */ } }
-  function lsRemove(key){ try { localStorage.removeItem(key); } catch(e){ /* noop */ } }
+  /* 확인 기록·내 채널은 localStorage에 둔다. 저장소가 막힌 환경(앱 내 미리보기, 일부
+     인앱 브라우저, 사이트 데이터 차단)에서는 쓰기가 조용히 실패해 '확인 완료'를 눌러도
+     아무 일도 안 일어난 것처럼 보였다. 그런 환경에서는 메모리에 대신 보관해 이번
+     방문 동안은 동작하게 하고, 새로고침하면 사라진다는 사실을 화면에 알린다. */
+  const memStore = {};
+  const storageOK = (() => {
+    try { const k = '__signaldesk_probe'; localStorage.setItem(k, '1'); localStorage.removeItem(k); return true; }
+    catch(e){ return false; }
+  })();
+  function lsGet(key){
+    if (storageOK){ try { return localStorage.getItem(key); } catch(e){ /* 아래로 */ } }
+    return Object.prototype.hasOwnProperty.call(memStore, key) ? memStore[key] : null;
+  }
+  function lsSet(key, value){
+    if (storageOK){ try { localStorage.setItem(key, value); return; } catch(e){ /* 아래로 */ } }
+    memStore[key] = String(value);
+  }
+  function lsRemove(key){
+    if (storageOK){ try { localStorage.removeItem(key); } catch(e){ /* noop */ } }
+    delete memStore[key];
+  }
 
   function primaryUrl(ev){ return ev.sources[0] ? ev.sources[0].url : '#'; }
   function countLabel(ev){ return ev.sources.length > 1 ? `${ev.sources.length}개 매체 보도` : '단일 매체'; }
@@ -829,9 +847,11 @@
       btn.textContent = pending ? `오늘 확인 완료 (${pending}건)` : '오늘 확인 완료';
     }
 
-    note.innerHTML = checkedAt
+    const storageWarn = storageOK ? ''
+      : ' · <span>이 브라우저는 저장이 막혀 있어 새로고침하면 확인 기록이 사라집니다</span>';
+    note.innerHTML = (checkedAt
       ? `마지막 확인 ${fmtStamp(checkedAt)} · <button class="btn-link" id="btn-reset">지난 항목 다시 보기</button>`
-      : `<span>확인을 완료하면 다음 방문 때 새로 들어온 것만 보입니다.</span>`;
+      : `<span>확인을 완료하면 다음 방문 때 새로 들어온 것만 보입니다.</span>`) + storageWarn;
     const reset = document.getElementById('btn-reset');
     if (reset) reset.addEventListener('click', () => { lsRemove(LS_LAST_CHECKED); renderToday(); });
   }
