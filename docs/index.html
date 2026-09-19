@@ -185,8 +185,6 @@
   a.badge:hover{ border-color:var(--ink); }
   .card h3 a, .tl-card h4 a{ cursor:pointer; }
   .card h3 a:hover, .tl-card h4 a:hover{ text-decoration:underline; text-underline-offset:3px; }
-  a.mini-card{ cursor:pointer; transition:border-color 0.12s ease; }
-  a.mini-card:hover{ border-color:var(--ink); }
 
   /* ---------- 알아둘 것: 한 줄 목록 ---------- */
   .oneline{ display:flex; flex-direction:column; border:1px solid var(--hairline); border-radius:var(--r-sm); overflow:hidden; }
@@ -274,11 +272,72 @@
 
   #feed-filters{ margin-bottom:8px; }
   .filter-note{ margin:0 0 18px; max-width:70ch; }
-  .cat-count-label{ margin:0 0 16px; color:var(--body); }
-  .cat-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(228px,1fr)); gap:10px; }
-  .mini-card{ background:var(--canvas); border:1px solid var(--hairline); border-radius:var(--r-sm); padding:16px; display:flex; flex-direction:column; gap:10px; }
-  .mini-card h4{ font-size:15px; font-weight:500; line-height:20px; letter-spacing:-0.1px; margin:0; text-wrap:balance; }
-  .mini-card .mini-meta{ display:flex; align-items:center; justify-content:space-between; }
+  /* ---------- 카테고리별: 분야별 브리핑 → 상세 목록 ---------- */
+  .cb-intro{ margin:0 0 6px; color:var(--body); }
+  .cb-block{ border-top:1px solid var(--hairline); padding:18px 0 14px; }
+  .cb-block:last-child{ border-bottom:1px solid var(--hairline); }
+  .cb-head{ display:flex; align-items:baseline; gap:4px 12px; flex-wrap:wrap; }
+  .cb-name{ font-size:18px; font-weight:500; line-height:24px; letter-spacing:-0.2px; color:var(--ink); }
+  .cb-count{ color:var(--body); font-variant-numeric:tabular-nums; }
+  .cb-count b{ font-weight:500; color:var(--ink); }
+  .cb-def{ margin:2px 0 10px; color:var(--body); }
+  .cb-rows{ display:flex; flex-direction:column; }
+  .cb-row{ display:flex; align-items:baseline; gap:10px; padding:7px 0; }
+  .cb-row + .cb-row{ border-top:1px dashed var(--hairline); }
+  .cb-row .cb-title{ flex:1; min-width:0; font-size:15px; line-height:21px; color:var(--ink); }
+  .cb-row a.cb-title:hover{ text-decoration:underline; text-underline-offset:3px; }
+  .cb-meta{ flex:none; color:var(--body); white-space:nowrap; }
+  .cb-tier{ flex:none; font-size:12px; line-height:16px; padding:1px 7px; border-radius:var(--r-sm); border:1px solid transparent; }
+  .cb-tier.action{ background:var(--action-wash); color:var(--action); border-color:#f0cdbc; }
+  .cb-tier.heads_up{ background:var(--headsup-wash); color:var(--headsup); border-color:#eadfbe; }
+  .cb-empty{ color:var(--body); padding:4px 0 2px; }
+  .cb-link{ appearance:none; background:none; border:none; padding:0; margin-top:6px; font:inherit; font-size:14px; color:var(--ink); cursor:pointer; text-decoration:underline; text-underline-offset:3px; text-decoration-color:var(--hairline); }
+  .cb-link:hover{ text-decoration-color:var(--ink); }
+  .cb-link:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .cb-block.folded{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .cb-block.folded .cb-name{ color:var(--body); }
+  .cb-block.folded .cb-link{ margin-top:0; }
+  /* 좁은 화면에서는 출처·날짜를 제목 옆이 아니라 아래로 내린다. 옆에 두면 제목이 한 단어씩 깨진다. */
+  @media (max-width:680px){
+    .cb-row{ display:block; }
+    .cb-row .cb-tier{ display:inline-block; margin-right:6px; }
+    .cb-row .cb-meta{ display:block; margin-top:2px; white-space:normal; }
+  }
+
+  .cd-back{ margin:0 0 14px; }
+  .cd-switch{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 20px; }
+  /* 분야 전환 칩: 예전 카테고리 필터처럼 분야 색(점 + 글자)으로 구분하고, 선택된 분야는 같은 색의 옅은 바탕을 깐다. */
+  .cd-switch button{ appearance:none; font:inherit; font-size:14px; font-weight:500; cursor:pointer; border:1px solid var(--hairline); background:var(--canvas); color:var(--ink); border-radius:var(--r-sm); padding:6px 12px; display:inline-flex; align-items:center; gap:7px; }
+  .cd-switch button .dot{ width:7px; height:7px; border-radius:50%; background:currentColor; flex:none; }
+  .cd-switch button:hover{ border-color:currentColor; }
+  .cd-switch button:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .cd-switch button.geo{ color:var(--cat-geo); }
+  .cd-switch button.ai{ color:var(--cat-ai); }
+  .cd-switch button.industry{ color:var(--cat-industry); }
+  .cd-switch button.perf{ color:var(--cat-perf); }
+  .cd-switch button.commerce{ color:var(--cat-commerce); }
+  .cd-switch button.brand{ color:var(--cat-brand); }
+  .cd-switch button.research{ color:var(--cat-research); }
+  .cd-switch button.active{ border-color:currentColor; }
+  .cd-switch button.active.geo{ background:var(--cat-geo-wash); }
+  .cd-switch button.active.ai{ background:var(--cat-ai-wash); }
+  .cd-switch button.active.industry{ background:var(--cat-industry-wash); }
+  .cd-switch button.active.perf{ background:var(--cat-perf-wash); }
+  .cd-switch button.active.commerce{ background:var(--cat-commerce-wash); }
+  .cd-switch button.active.brand{ background:var(--cat-brand-wash); }
+  .cd-switch button.active.research{ background:var(--cat-research-wash); }
+  .cd-title{ margin:0 0 4px; }
+  .cd-group{ margin-top:22px; }
+  .cd-group-head{ display:flex; align-items:baseline; gap:10px; margin:0 0 6px; }
+  .cd-group-head h3{ font-size:15px; font-weight:500; margin:0; }
+  .cd-list{ border-top:1px solid var(--hairline); max-width:820px; }
+  .cd-item{ padding:14px 0; border-bottom:1px solid var(--hairline); }
+  .cd-item-top{ display:flex; align-items:baseline; gap:8px; }
+  .cd-item h4{ flex:1; min-width:0; font-size:16px; font-weight:500; line-height:22px; letter-spacing:-0.16px; margin:0; }
+  .cd-item h4 a:hover{ text-decoration:underline; text-underline-offset:3px; }
+  .cd-item p{ margin:4px 0 6px; font-size:14px; line-height:21px; color:#3d3d3d;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .cd-item .cd-meta{ color:var(--body); }
 
   .view-intro{ margin-bottom:20px; max-width:70ch; }
   .view-intro h2{ margin:0 0 8px; }
@@ -431,9 +490,7 @@
     </div>
 
     <div id="category-view" class="view">
-      <div class="filters" id="cat-filter"></div>
-      <p class="cat-count-label caption" id="cat-count-label"></p>
-      <div class="cat-grid" id="cat-grid-items"></div>
+      <div id="cat-body"></div>
     </div>
 
   </div>
@@ -891,57 +948,199 @@
   });
 
   /* ---------- 카테고리별 ---------- */
-  let activeCategory = 'all';
+  /* 카테고리별 탭은 "분야별로 요즘 무슨 흐름이 있나"를 보는 곳이다. 오늘 탭(조치),
+     캘린더(날짜), 전체 피드(검색·정독)와 겹치지 않도록 기본 화면은 분야별 브리핑이고,
+     분야를 고르면 요약이 붙은 목록으로 들어간다. 순서는 퍼포먼스 마케터 기준으로 고정해
+     매일 같은 자리에서 찾게 한다. 데이터·AI 리서치는 전체의 약 40%인데 전부 참고
+     등급이라, 펼치기 전에는 건수만 보인다. */
+  const CATEGORY_VIEW_ORDER = ["Performance Marketing","SEO / GEO","AI Trends","Commerce & Retail","Brand Marketing","Marketing Industry","Data & AI Research"];
+  const CATEGORY_FOLDED = "Data & AI Research";
+  const CATEGORY_KO = {
+    "Performance Marketing":"퍼포먼스 마케팅",
+    "SEO / GEO":"SEO / GEO",
+    "AI Trends":"AI 트렌드",
+    "Commerce & Retail":"커머스·리테일",
+    "Brand Marketing":"브랜드 마케팅",
+    "Marketing Industry":"마케팅 업계",
+    "Data & AI Research":"데이터·AI 리서치",
+  };
+  const CATEGORY_NOTE = {
+    "Performance Marketing":"광고 플랫폼 운영·입찰·측정",
+    "SEO / GEO":"검색 노출과 AI 검색 최적화",
+    "AI Trends":"검색·광고에 들어오는 AI 기능과 도구",
+    "Commerce & Retail":"이커머스·리테일 채널과 커머스 전략",
+    "Brand Marketing":"브랜드 캠페인과 CMO 인사이트",
+    "Marketing Industry":"플랫폼 기업·에이전시 등 업계 동향",
+    "Data & AI Research":"데이터 사이언스·AI 연구. 실무 조치와는 거리가 먼 글",
+  };
+  const BRIEF_ROWS = 3;
+  const TIER_RANK = { action:0, heads_up:1, context:2 };
 
-  function miniCardHTML(ev){
-    return `<a class="mini-card" href="${esc(primaryUrl(ev))}" target="_blank" rel="noopener">
-      <div class="row-top">${chipHTML(ev)}</div>
-      <h4>${esc(ev.title)}</h4>
-      <div class="mini-meta">
-        <span class="mono-caption">${esc(ev.sources[0].name)}</span>
-        <span class="mono-caption">${fmtDateLabel(ev.date)}</span>
+  let activeCategory = null;     // null = 분야별 브리핑
+  let foldedOpen = false;
+  let olderOpen = false;
+
+  function catName(cat){ return CATEGORY_KO[cat] || cat; }
+  function relDay(d){
+    const today = new Date(); today.setHours(0,0,0,0);
+    const diff = Math.round((today - new Date(d + 'T00:00:00')) / 864e5);
+    if (diff <= 0) return '오늘';
+    if (diff === 1) return '어제';
+    if (diff < 7) return `${diff}일 전`;
+    return fmtDateLabel(d);
+  }
+  function catWindows(cat){
+    const c7 = cutoffDate(7), c14 = cutoffDate(14);
+    const all = CLASSIFIED_EVENTS.filter(e => e.category === cat).sort(byRecency);
+    return {
+      all,
+      recent: all.filter(e => e.date >= c7),
+      prev: all.filter(e => e.date >= c14 && e.date < c7),
+      older: all.filter(e => e.date < c14),
+    };
+  }
+  // 대표 헤드라인: 최근 14일 안에서 등급 → 최신 순. 비어 있으면 가장 최근 글.
+  function briefPicks(w){
+    const pool = w.recent.concat(w.prev);
+    if (!pool.length) return w.all.slice(0, 2);
+    return pool.slice().sort((a,b) =>
+      (TIER_RANK[a.action_tier] - TIER_RANK[b.action_tier]) || byRecency(a,b)
+    ).slice(0, BRIEF_ROWS);
+  }
+  // RSS 요약에 딸려 오는 HTML 태그와 "The post … appeared first on …" 꼬리말을 걷어낸다.
+  function cleanSummary(s){
+    return String(s || '')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/\s*The post .*?(?:appeared first|first appeared) on .*$/i, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+  function tierTag(ev){
+    return ev.action_tier === 'context' ? '' : `<span class="cb-tier ${esc(ev.action_tier)}">${TIER_LABEL[ev.action_tier]}</span>`;
+  }
+  function sourceLabel(ev){
+    const s = ev.sources[0];
+    if (!s) return '';
+    return esc(s.name) + (s.official ? ' 공식' : '') + (ev.sources.length > 1 ? ` 외 ${ev.sources.length - 1}곳` : '');
+  }
+  function countLine(w){
+    return `최근 7일 <b>${w.recent.length}건</b> · 직전 7일 ${w.prev.length}건`;
+  }
+
+  function briefBlockHTML(cat){
+    const w = catWindows(cat);
+    const picks = briefPicks(w);
+    const rows = picks.length
+      ? picks.map(ev => `<div class="cb-row">
+          ${tierTag(ev)}
+          <a class="cb-title" href="${esc(primaryUrl(ev))}" target="_blank" rel="noopener">${esc(ev.title)}</a>
+          <span class="cb-meta caption">${sourceLabel(ev)} · ${relDay(ev.date)}</span>
+        </div>`).join('')
+      : `<div class="cb-empty caption">아직 들어온 글이 없습니다.</div>`;
+    const stale = !w.recent.length && !w.prev.length && w.all.length
+      ? `<div class="cb-empty caption">최근 14일 동안 새 글이 없어 가장 최근 글을 보여줍니다.</div>` : '';
+    return `<section class="cb-block">
+      <div class="cb-head">
+        <span class="cb-name">${esc(catName(cat))}</span>
+        <span class="cb-count caption">${countLine(w)}</span>
       </div>
-    </a>`;
+      <p class="cb-def caption">${esc(CATEGORY_NOTE[cat] || '')}</p>
+      ${stale}
+      <div class="cb-rows">${rows}</div>
+      ${w.all.length ? `<button class="cb-link" data-open-cat="${esc(cat)}">${w.all.length}건 모두 보기 →</button>` : ''}
+    </section>`;
   }
 
-  function renderCategoryFilter(){
-    const byCat = {};
-    CLASSIFIED_EVENTS.forEach(ev => { (byCat[ev.category] = byCat[ev.category] || []).push(ev); });
-    const present = CATEGORY_ORDER.filter(c => byCat[c]);
-
-    const pills = [
-      `<button class="cat-pill mono-btn all${activeCategory==='all' ? ' active all' : ''}" data-cat="all">전체 <span class="mono-caption" style="color:inherit">${CLASSIFIED_EVENTS.length}</span></button>`,
-      ...present.map(cat => {
-        const key = CATEGORY_KEY[cat];
-        const isActive = activeCategory === cat;
-        return `<button class="cat-pill mono-btn ${key}${isActive ? ` active ${key}` : ''}" data-cat="${esc(cat)}">
-          <span class="dot"></span>${esc(cat)} <span class="mono-caption" style="color:inherit">${byCat[cat].length}</span>
-        </button>`;
-      })
-    ];
-    document.getElementById('cat-filter').innerHTML = pills.join('');
-
-    document.querySelectorAll('#cat-filter .cat-pill').forEach(btn => {
-      btn.addEventListener('click', () => {
-        activeCategory = btn.dataset.cat;
-        renderCategory();
-      });
-    });
+  function foldedBlockHTML(cat){
+    const w = catWindows(cat);
+    const allContext = w.recent.every(e => e.action_tier === 'context');
+    return `<section class="cb-block folded">
+      <div class="cb-head">
+        <span class="cb-name">${esc(catName(cat))}</span>
+        <span class="cb-count caption">최근 7일 ${w.recent.length}건${w.recent.length && allContext ? ' · 전부 참고 등급' : ''}</span>
+      </div>
+      <button class="cb-link" data-unfold>펼치기</button>
+    </section>`;
   }
 
-  function renderCategoryGrid(){
-    const items = (activeCategory === 'all' ? CLASSIFIED_EVENTS : CLASSIFIED_EVENTS.filter(e => e.category === activeCategory))
-      .slice().sort(byRecency);
-    document.getElementById('cat-count-label').textContent = `${activeCategory === 'all' ? '전체' : activeCategory} · ${items.length}개 이벤트`;
-    document.getElementById('cat-grid-items').innerHTML = items.length
-      ? items.map(miniCardHTML).join('')
-      : `<div class="empty caption">해당 카테고리에 이벤트가 없습니다.</div>`;
+  function renderCategoryBrief(){
+    const cats = CATEGORY_VIEW_ORDER.filter(c => CLASSIFIED_EVENTS.some(e => e.category === c))
+      .concat([...new Set(CLASSIFIED_EVENTS.map(e => e.category))].filter(c => !CATEGORY_VIEW_ORDER.includes(c)));
+    const html = cats.map(cat =>
+      cat === CATEGORY_FOLDED && !foldedOpen ? foldedBlockHTML(cat) : briefBlockHTML(cat)
+    ).join('');
+    document.getElementById('cat-body').innerHTML =
+      `<p class="cb-intro caption">분야별 최근 흐름입니다. 건수는 최근 7일과 그 직전 7일을 비교하고, 대표 글은 등급·최신 순으로 골랐습니다.</p>${html}`;
+  }
+
+  function detailItemHTML(ev){
+    const plats = ev.platforms.length ? ' · ' + ev.platforms.map(p => esc(p.label)).join(', ') : '';
+    return `<article class="cd-item">
+      <div class="cd-item-top">
+        <h4><a href="${esc(primaryUrl(ev))}" target="_blank" rel="noopener">${esc(ev.title)}</a></h4>
+        ${tierTag(ev)}
+      </div>
+      ${cleanSummary(ev.summary) ? `<p>${esc(cleanSummary(ev.summary))}</p>` : ''}
+      <div class="cd-meta caption">${sourceLabel(ev)} · ${fmtDateLabel(ev.date)}${plats}</div>
+    </article>`;
+  }
+  function detailGroupHTML(label, items, extra){
+    return `<div class="cd-group">
+      <div class="cd-group-head"><h3>${label}</h3><span class="caption">${items.length}건</span></div>
+      ${items.length
+        ? `<div class="cd-list">${items.map(detailItemHTML).join('')}</div>`
+        : `<div class="cb-empty caption">이 기간에는 들어온 글이 없습니다.</div>`}
+      ${extra || ''}
+    </div>`;
+  }
+
+  function renderCategoryDetail(){
+    const cat = activeCategory;
+    const w = catWindows(cat);
+    const cats = CATEGORY_VIEW_ORDER.filter(c => CLASSIFIED_EVENTS.some(e => e.category === c));
+    const olderBlock = w.older.length
+      ? (olderOpen
+          ? detailGroupHTML('그 이전', w.older)
+          : `<div class="cd-group"><button class="cb-link" data-older>그 이전 ${w.older.length}건 보기</button></div>`)
+      : '';
+    document.getElementById('cat-body').innerHTML = `
+      <p class="cd-back"><button class="cb-link" data-back>← 분야별 브리핑</button></p>
+      <div class="cd-switch" role="group" aria-label="분야 바꾸기">
+        ${cats.map(c => `<button data-open-cat="${esc(c)}" class="${CATEGORY_KEY[c] || 'industry'}${c === cat ? ' active' : ''}"${c === cat ? ' aria-current="true"' : ''}><span class="dot"></span>${esc(catName(c))}</button>`).join('')}
+      </div>
+      <h2 class="disp-md cd-title">${esc(catName(cat))}</h2>
+      <p class="caption" style="margin:0">${esc(CATEGORY_NOTE[cat] || '')} · 전체 ${w.all.length}건</p>
+      ${detailGroupHTML('최근 7일', w.recent)}
+      ${detailGroupHTML('8~14일 전', w.prev)}
+      ${olderBlock}`;
   }
 
   function renderCategory(){
-    renderCategoryFilter();
-    renderCategoryGrid();
+    if (activeCategory) renderCategoryDetail();
+    else renderCategoryBrief();
   }
+
+  document.getElementById('cat-body').addEventListener('click', e => {
+    const t = e.target.closest('button');
+    if (!t) return;
+    const view = document.getElementById('category-view');
+    if (t.dataset.openCat){
+      activeCategory = t.dataset.openCat;
+      olderOpen = false;
+    } else if (t.hasAttribute('data-back')){
+      activeCategory = null;
+    } else if (t.hasAttribute('data-unfold')){
+      foldedOpen = true;
+    } else if (t.hasAttribute('data-older')){
+      olderOpen = true;
+      renderCategory();
+      return;
+    } else {
+      return;
+    }
+    renderCategory();
+    if (view.getBoundingClientRect().top < 0) view.scrollIntoView({ block:'start' });
+  });
 
   /* ---------- 아카이브 ---------- */
   const eventsByDate = {};
